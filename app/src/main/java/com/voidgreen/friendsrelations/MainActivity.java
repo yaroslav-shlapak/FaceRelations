@@ -1,4 +1,4 @@
-package com.voidgreen.facerelations;
+package com.voidgreen.friendsrelations;
 
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
@@ -11,6 +11,10 @@ import android.view.MenuItem;
 import android.support.design.widget.NavigationView;
 import android.view.View;
 
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
+import com.voidgreen.facerelations.R;
+
 public class MainActivity extends AppCompatActivity {
 
 
@@ -19,6 +23,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
+
         setContentView(R.layout.activity_main);
 
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
