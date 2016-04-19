@@ -1,6 +1,5 @@
 package com.voidgreen.friendsrelations;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -15,17 +14,16 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.facebook.FacebookAuthorizationException;
-import com.facebook.Profile;
-import com.voidgreen.facerelations.*;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
+import com.facebook.Profile;
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.voidgreen.facerelations.R;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
