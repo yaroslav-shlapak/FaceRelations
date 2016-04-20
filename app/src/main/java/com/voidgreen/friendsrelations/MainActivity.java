@@ -29,6 +29,8 @@ import com.facebook.login.widget.LoginButton;
 import com.facebook.login.widget.ProfilePictureView;
 import com.voidgreen.facerelations.R;
 
+import java.util.Arrays;
+
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
@@ -95,9 +97,11 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        drawerUserName = (TextView) findViewById(R.id.userName);
-        profilePictureView = (ProfilePictureView) findViewById(R.id.profilePicture);
+        View headerView = view.inflateHeaderView(R.layout.drawer_header);
+        profilePictureView= (ProfilePictureView) headerView.findViewById(R.id.profilePicture);
+        drawerUserName = (TextView) headerView.findViewById(R.id.userName);
         //loginButton.setReadPermissions("user_friends");
+        loginButton.setReadPermissions(Arrays.asList("user_relationships"));
         loginButton.registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
@@ -133,6 +137,12 @@ public class MainActivity extends AppCompatActivity {
                 });
 
 
+        Profile profile = Profile.getCurrentProfile();
+        if(profile != null) {
+            userName.setText(profile.getFirstName() + " " + profile.getLastName());
+            drawerUserName.setText(profile.getFirstName() + " " + profile.getLastName());
+            profilePictureView.setProfileId(profile.getId());
+        }
         accessTokenTracker = new AccessTokenTracker() {
             @Override
             protected void onCurrentAccessTokenChanged(
