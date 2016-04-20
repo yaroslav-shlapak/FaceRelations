@@ -10,6 +10,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -23,18 +24,25 @@ import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
 import com.facebook.Profile;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.facebook.login.widget.ProfilePictureView;
 import com.voidgreen.facerelations.R;
 
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
+    public static final String TAG = "FaceRelations";
 
     @Bind(R.id.login_button)LoginButton loginButton;
     @Bind(R.id.user_name) TextView userName;
@@ -101,7 +109,12 @@ public class MainActivity extends AppCompatActivity {
         profilePictureView= (ProfilePictureView) headerView.findViewById(R.id.profilePicture);
         drawerUserName = (TextView) headerView.findViewById(R.id.userName);
         //loginButton.setReadPermissions("user_friends");
-        loginButton.setReadPermissions(Arrays.asList("user_relationships"));
+        //loginButton.setReadPermissions(Arrays.asList("user_relationships"));
+        List permisionsList = new ArrayList<>();;
+        //permisionsList.add("user_relationships");
+        permisionsList.add("user_friends");
+        permisionsList.add("email");
+        loginButton.setReadPermissions(Arrays.asList("user_friends", "user_relationships"));
         loginButton.registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
@@ -110,9 +123,11 @@ public class MainActivity extends AppCompatActivity {
 
                         //Toast.makeText(MainActivity.this, "onSuccess", Toast.LENGTH_SHORT).show();
                         Profile profile = Profile.getCurrentProfile();
-                        userName.setText(profile.getFirstName() + " " + profile.getLastName());
-                        drawerUserName.setText(profile.getFirstName() + " " + profile.getLastName());
-                        profilePictureView.setProfileId(profile.getId());
+                        if(profile != null) {
+                            userName.setText(profile.getFirstName() + " " + profile.getLastName());
+                            drawerUserName.setText(profile.getFirstName() + " " + profile.getLastName());
+                            profilePictureView.setProfileId(profile.getId());
+                        }
                         /*userName.setText("User ID: "
                                 + loginResult.getAccessToken().getUserId()
                                 + "\n" +
@@ -155,6 +170,21 @@ public class MainActivity extends AppCompatActivity {
         };
         // If the access token is available already assign it.
         accessToken = AccessToken.getCurrentAccessToken();
+/*
+        GraphRequest request = GraphRequest.newMeRequest(
+                accessToken,
+                new GraphRequest.GraphJSONObjectCallback() {
+                    @Override
+                    public void onCompleted(
+                            JSONObject object,
+                            GraphResponse response) {
+                        Log.d(TAG, "onCompleted: ");
+                    }
+                });
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "id,name,link");
+        request.setParameters(parameters);
+        request.executeAsync();*/
 
     }
 
