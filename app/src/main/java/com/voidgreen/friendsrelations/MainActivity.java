@@ -32,10 +32,13 @@ import com.facebook.login.widget.LoginButton;
 import com.facebook.login.widget.ProfilePictureView;
 import com.voidgreen.facerelations.R;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.Bind;
@@ -111,10 +114,10 @@ public class MainActivity extends AppCompatActivity {
         //loginButton.setReadPermissions("user_friends");
         //loginButton.setReadPermissions(Arrays.asList("user_relationships"));
         List permisionsList = new ArrayList<>();;
-        //permisionsList.add("user_relationships");
+        permisionsList.add("user_relationships");
         permisionsList.add("user_friends");
         permisionsList.add("email");
-        loginButton.setReadPermissions(Arrays.asList("user_friends", "user_relationships"));
+        loginButton.setReadPermissions(permisionsList/*Arrays.asList("user_friends")*/);
         loginButton.registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
@@ -166,11 +169,17 @@ public class MainActivity extends AppCompatActivity {
                 // Set the access token using
                 // currentAccessToken when it's loaded or set.
                 accessToken = currentAccessToken;
+                //Log.d(TAG, "permitions: " + accessToken.getPermissions());
             }
         };
         // If the access token is available already assign it.
         accessToken = AccessToken.getCurrentAccessToken();
-/*
+        if(accessToken != null) {
+            Log.d(TAG, "permitions: " + accessToken.getPermissions());
+        } else {
+            Log.d(TAG, "accessToken: is null ");
+        }
+
         GraphRequest request = GraphRequest.newMeRequest(
                 accessToken,
                 new GraphRequest.GraphJSONObjectCallback() {
@@ -178,14 +187,32 @@ public class MainActivity extends AppCompatActivity {
                     public void onCompleted(
                             JSONObject object,
                             GraphResponse response) {
-                        Log.d(TAG, "onCompleted: ");
+                        JSONObject newresponse, totlfrndcount;
+                        try {
+                            newresponse = object.getJSONObject("friends");
+                            Log.d(TAG, newresponse + "");
+                            JSONArray array = newresponse.getJSONArray("data");
+                            Log.d(TAG, array + "");
+                            for (int i = 0; i < array.length(); i++) {
+                                JSONObject res = array.getJSONObject(i);
+                                Log.d(TAG, res.getString("name"));
+                                Log.d(TAG, res.getString("id"));
+
+                            }
+                            totlfrndcount = newresponse
+                                    .getJSONObject("summary");
+                            Log.d(TAG, totlfrndcount
+                                    .getString("total_count"));
+                        } catch (JSONException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
                     }
                 });
         Bundle parameters = new Bundle();
-        parameters.putString("fields", "id,name,link");
+        parameters.putString("fields", "name,email,friends");
         request.setParameters(parameters);
-        request.executeAsync();*/
-
+        request.executeAsync();
     }
 
     @Override
