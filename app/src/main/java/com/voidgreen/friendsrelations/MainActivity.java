@@ -194,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
                                 newresponse = object.getJSONObject("friends");
                                 Log.d(TAG, newresponse + "");
                                 JSONArray array = newresponse.getJSONArray("data");
-                                Log.d(TAG, array + "");
+                                Log.d(TAG, array.length() + "");
                                 for (int i = 0; i < array.length(); i++) {
                                     JSONObject res = array.getJSONObject(i);
                                     Log.d(TAG, res.getString("name"));
