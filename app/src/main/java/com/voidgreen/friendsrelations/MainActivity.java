@@ -189,20 +189,23 @@ public class MainActivity extends AppCompatActivity {
                             GraphResponse response) {
                         JSONObject newresponse, totlfrndcount;
                         try {
-                            newresponse = object.getJSONObject("friends");
-                            Log.d(TAG, newresponse + "");
-                            JSONArray array = newresponse.getJSONArray("data");
-                            Log.d(TAG, array + "");
-                            for (int i = 0; i < array.length(); i++) {
-                                JSONObject res = array.getJSONObject(i);
-                                Log.d(TAG, res.getString("name"));
-                                Log.d(TAG, res.getString("id"));
 
+                            if(object != null) {
+                                newresponse = object.getJSONObject("friends");
+                                Log.d(TAG, newresponse + "");
+                                JSONArray array = newresponse.getJSONArray("data");
+                                Log.d(TAG, array + "");
+                                for (int i = 0; i < array.length(); i++) {
+                                    JSONObject res = array.getJSONObject(i);
+                                    Log.d(TAG, res.getString("name"));
+                                    Log.d(TAG, res.getString("id"));
+
+                                }
+                                totlfrndcount = newresponse
+                                        .getJSONObject("summary");
+                                Log.d(TAG, totlfrndcount
+                                        .getString("total_count"));
                             }
-                            totlfrndcount = newresponse
-                                    .getJSONObject("summary");
-                            Log.d(TAG, totlfrndcount
-                                    .getString("total_count"));
                         } catch (JSONException e) {
                             // TODO Auto-generated catch block
                             e.printStackTrace();
