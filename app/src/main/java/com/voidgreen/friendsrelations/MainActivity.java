@@ -25,7 +25,9 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
+import com.facebook.GraphRequestAsyncTask;
 import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
 import com.facebook.Profile;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
@@ -114,9 +116,7 @@ public class MainActivity extends AppCompatActivity {
         //loginButton.setReadPermissions("user_friends");
         //loginButton.setReadPermissions(Arrays.asList("user_relationships"));
         List permisionsList = new ArrayList<>();;
-        permisionsList.add("user_relationships");
-        permisionsList.add("user_friends");
-        permisionsList.add("email");
+        permisionsList.add("user_photos");
         loginButton.setReadPermissions(permisionsList/*Arrays.asList("user_friends")*/);
         loginButton.registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
@@ -191,14 +191,64 @@ public class MainActivity extends AppCompatActivity {
                         try {
 
                             if(object != null) {
-                                newresponse = object.getJSONObject("friends");
-                                Log.d(TAG, newresponse + "");
+                                Log.d(TAG, object.toString());
+                                newresponse = object.getJSONObject("albums");
+                                //Log.d(TAG, newresponse + "");
                                 JSONArray array = newresponse.getJSONArray("data");
-                                Log.d(TAG, array.length() + "");
+                                //Log.d(TAG, array.length() + "");
+
+
                                 for (int i = 0; i < array.length(); i++) {
                                     JSONObject res = array.getJSONObject(i);
-                                    Log.d(TAG, res.getString("name"));
-                                    Log.d(TAG, res.getString("id"));
+                                    //Log.d(TAG, res.getString("created_time"));
+                                    //Log.d(TAG, res.getString("name"));
+                                    //Log.d(TAG, res.getString("id"));
+                                    new GraphRequest(
+                                            AccessToken.getCurrentAccessToken(),
+                                            "/" + res.getString("id") + "/photos",
+                                            null,
+                                            HttpMethod.GET,
+                                            new GraphRequest.Callback() {
+                                                public void onCompleted(GraphResponse response) {
+                                                    Log.d(TAG, response.toString());
+
+                                                    JSONObject photosObject = response.getJSONObject();
+                                                    JSONArray photosArray = null;
+                                                    try {
+                                                        photosArray = photosObject.getJSONArray("data");
+                                                    } catch (JSONException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                    for (int i = 0; i < photosArray.length(); i++) {
+                                                        try {
+                                                            JSONObject photoData = photosArray.getJSONObject(i);
+                                                            String photoId = photoData.getString("id");
+                                                            //Log.d(TAG, photoId);
+                                                            Bundle photoParameters = new Bundle();
+                                                            photoParameters.putString("fields", "id,link");
+                                                            GraphRequest photoRequest =  new GraphRequest(
+                                                                    AccessToken.getCurrentAccessToken(),
+                                                                    "/" + photoId,
+                                                                    null,
+                                                                    HttpMethod.GET,
+                                                                    new GraphRequest.Callback() {
+                                                                        public void onCompleted(GraphResponse response) {
+                                                                            Log.d(TAG, "Whoa");
+                                                                            Log.d(TAG, response.toString());
+
+                                                                        }
+                                                                    }
+                                                            );
+                                                            photoRequest.setParameters(photoParameters);
+                                                            photoRequest.executeAsync();
+
+                                                        } catch (JSONException e) {
+                                                            e.printStackTrace();
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                    ).executeAsync();
 
                                 }
                                 totlfrndcount = newresponse
@@ -213,7 +263,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
         Bundle parameters = new Bundle();
-        parameters.putString("fields", "name,email,friends");
+        parameters.putString("fields", "name,albums");
         request.setParameters(parameters);
         request.executeAsync();
     }
