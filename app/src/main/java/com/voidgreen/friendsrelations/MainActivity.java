@@ -68,6 +68,8 @@ public class MainActivity extends AppCompatActivity {
     private AccessTokenTracker accessTokenTracker;
     private AccessToken accessToken;
 
+    private ArrayList<String> albumsIds;
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -180,6 +182,9 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "accessToken: is null ");
         }
 
+        albumsIds = new ArrayList<>(100);
+
+
         GraphRequest request = GraphRequest.newMeRequest(
                 accessToken,
                 new GraphRequest.GraphJSONObjectCallback() {
@@ -187,58 +192,72 @@ public class MainActivity extends AppCompatActivity {
                     public void onCompleted(
                             JSONObject object,
                             GraphResponse response) {
-                        JSONObject newresponse, totlfrndcount;
                         try {
 
                             if(object != null) {
                                 Log.d(TAG, object.toString());
-                                newresponse = object.getJSONObject("albums");
+                                JSONObject newresponse = object.getJSONObject("albums");
                                 //Log.d(TAG, newresponse + "");
                                 JSONArray array = newresponse.getJSONArray("data");
                                 //Log.d(TAG, array.length() + "");
 
 
-                                for (int i = 0; i < array.length(); i++) {
-                                    JSONObject res = array.getJSONObject(i);
+                                //for (int i = 0; i < array.length(); i++) {
+                                    JSONObject res = array.getJSONObject(0);
                                     //Log.d(TAG, res.getString("created_time"));
                                     //Log.d(TAG, res.getString("name"));
-                                    //Log.d(TAG, res.getString("id"));
+                                    Log.d(TAG, res.getString("id"));
+                                    albumsIds.add(res.getString("id"));
+
                                     new GraphRequest(
                                             AccessToken.getCurrentAccessToken(),
-                                            "/" + res.getString("id") + "/photos",
+                                            "/" + albumsIds.get(0) + "/photos",
                                             null,
                                             HttpMethod.GET,
                                             new GraphRequest.Callback() {
                                                 public void onCompleted(GraphResponse response) {
-                                                    Log.d(TAG, response.toString());
+
 
                                                     JSONObject photosObject = response.getJSONObject();
                                                     JSONArray photosArray = null;
+                                                    Log.d(TAG, photosObject.toString());
                                                     try {
                                                         photosArray = photosObject.getJSONArray("data");
                                                     } catch (JSONException e) {
                                                         e.printStackTrace();
                                                     }
+                                                    GraphRequest photoRequest;
                                                     for (int i = 0; i < photosArray.length(); i++) {
                                                         try {
                                                             JSONObject photoData = photosArray.getJSONObject(i);
                                                             String photoId = photoData.getString("id");
-                                                            //Log.d(TAG, photoId);
+                                                            Log.d(TAG, photoId);
+
+
+
                                                             Bundle photoParameters = new Bundle();
-                                                            photoParameters.putString("fields", "id,link");
-                                                            GraphRequest photoRequest =  new GraphRequest(
+                                                            photoParameters.putString("fields", "link");
+
+
+                                                            photoRequest = new GraphRequest(
                                                                     AccessToken.getCurrentAccessToken(),
                                                                     "/" + photoId,
                                                                     null,
                                                                     HttpMethod.GET,
                                                                     new GraphRequest.Callback() {
-                                                                        public void onCompleted(GraphResponse response) {
-                                                                            Log.d(TAG, "Whoa");
-                                                                            Log.d(TAG, response.toString());
 
+                                                                        @Override
+                                                                        public void onCompleted(GraphResponse response) {
+                                                                            JSONObject data = response.getJSONObject();
+                                                                            try {
+                                                                                Log.d(TAG, data.getString("link"));
+                                                                            } catch (JSONException e) {
+                                                                                e.printStackTrace();
+                                                                            }
                                                                         }
                                                                     }
                                                             );
+
                                                             photoRequest.setParameters(photoParameters);
                                                             photoRequest.executeAsync();
 
@@ -250,11 +269,7 @@ public class MainActivity extends AppCompatActivity {
                                             }
                                     ).executeAsync();
 
-                                }
-                                totlfrndcount = newresponse
-                                        .getJSONObject("summary");
-                                Log.d(TAG, totlfrndcount
-                                        .getString("total_count"));
+                                //}
                             }
                         } catch (JSONException e) {
                             // TODO Auto-generated catch block
@@ -263,9 +278,31 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
         Bundle parameters = new Bundle();
-        parameters.putString("fields", "name,albums");
+        parameters.putString("fields", "albums");
         request.setParameters(parameters);
         request.executeAsync();
+
+
+
+
+/*
+        Bundle photoParameters = new Bundle();
+        photoParameters.putString("fields", "id,link");
+        GraphRequest photoRequest =  new GraphRequest(
+                AccessToken.getCurrentAccessToken(),
+                "/" + photoId,
+                null,
+                HttpMethod.GET,
+                new GraphRequest.Callback() {
+                    public void onCompleted(GraphResponse response) {
+                        Log.d(TAG, "Whoa");
+                        Log.d(TAG, response.toString());
+
+                    }
+                }
+        );
+        photoRequest.setParameters(photoParameters);
+        photoRequest.executeAsync();*/
     }
 
     @Override
