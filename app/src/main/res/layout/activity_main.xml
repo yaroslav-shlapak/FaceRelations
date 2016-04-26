@@ -50,19 +50,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="10dp"
-                android:textSize="18sp" />
+                android:textSize="10sp" />
 
             <Button
-                android:id="@+id/update_status"
+                android:id="@+id/get_album"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/update_status" />
+                android:text="@string/get_album" />
 
-            <Button
-                android:id="@+id/post_image"
+            <GridView
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/post_image" />
+                android:layout_height="160dp"
+                android:id="@+id/gridView" />
 
         </LinearLayout>
 

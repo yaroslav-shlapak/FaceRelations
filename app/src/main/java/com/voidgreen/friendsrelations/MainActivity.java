@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,6 +30,7 @@ import com.facebook.GraphRequestAsyncTask;
 import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.facebook.Profile;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.facebook.login.widget.ProfilePictureView;
@@ -59,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout drawerLayout;
     private View content;
 
-    private Button postImageButton;
+    @Bind(R.id.get_album) Button getAlbum;
     private Button updateStatusButton;
 
 
@@ -69,6 +71,12 @@ public class MainActivity extends AppCompatActivity {
     private AccessToken accessToken;
 
     private ArrayList<String> albumsIds;
+
+
+    private List<String> permisionsList = Arrays.asList("public_profile", "user_photos");
+    private ArrayList<String> albumIds = new ArrayList<>();
+    private ArrayList<String> photoIds = new ArrayList<>();
+    private GridView gridView;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -117,8 +125,7 @@ public class MainActivity extends AppCompatActivity {
         drawerUserName = (TextView) headerView.findViewById(R.id.userName);
         //loginButton.setReadPermissions("user_friends");
         //loginButton.setReadPermissions(Arrays.asList("user_relationships"));
-        List permisionsList = new ArrayList<>();;
-        permisionsList.add("user_photos");
+
         loginButton.setReadPermissions(permisionsList/*Arrays.asList("user_friends")*/);
         loginButton.registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
@@ -182,9 +189,19 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "accessToken: is null ");
         }
 
-        albumsIds = new ArrayList<>(100);
 
+        gridView = (GridView) findViewById(R.id.gridView);
 
+        getAlbum.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                getAlbumPics();
+
+            }
+        });
+
+/*
         GraphRequest request = GraphRequest.newMeRequest(
                 accessToken,
                 new GraphRequest.GraphJSONObjectCallback() {
@@ -280,8 +297,7 @@ public class MainActivity extends AppCompatActivity {
         Bundle parameters = new Bundle();
         parameters.putString("fields", "albums");
         request.setParameters(parameters);
-        request.executeAsync();
-
+        request.executeAsync();*/
 
 
 
@@ -343,6 +359,138 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    protected void getAlbumPics() {
 
+        GraphRequest request = GraphRequest.newMeRequest(
+                AccessToken.getCurrentAccessToken(),
+                new GraphRequest.GraphJSONObjectCallback() {
+                    @Override
+                    public void onCompleted(JSONObject object,
+                                            GraphResponse response) {
+                        try { // Application code
+                            JSONObject albums = new JSONObject(object
+                                    .getString("albums"));
+
+                            JSONArray data_array = albums.getJSONArray("data");
+
+                            for (int i = 0; i < data_array.length(); i++) {
+                                JSONObject _pubKey = data_array
+                                        .getJSONObject(i);
+                                String arrayfinal = _pubKey.getString("id");
+                                Log.d("FB ALbum ID ==  ", "" + arrayfinal);
+                                albumIds.add(arrayfinal);
+
+                            }
+                            getAlbum_picture(albumIds); // /getting picsssss
+                        } catch (JSONException E) {
+                            E.printStackTrace();
+                        }
+
+                    }
+
+                });
+        Bundle parameters = new Bundle();
+        parameters.putString("fields",
+                "id,name,email,gender, birthday, friends,albums");
+        request.setParameters(parameters);
+        request.executeAsync();
+
+    }
+
+    private void getAlbum_picture(ArrayList<String> albumIds) {
+
+        GraphRequest request = GraphRequest.newGraphPathRequest(
+                AccessToken.getCurrentAccessToken(), "/" + albumIds.get(0)
+                        + "/photos/", new GraphRequest.Callback() {
+                    @Override
+                    public void onCompleted(GraphResponse response) {
+                        JSONObject object = response.getJSONObject();
+                        try {
+                            JSONArray data_array1 = object.getJSONArray("data");
+                            for (int i = 0; i < data_array1.length(); i++) {
+                                JSONObject _pubKey = data_array1
+                                        .getJSONObject(i);
+                                String arrayfinal = _pubKey.getString("id");
+                                String picFinals = _pubKey.getString("picture");
+                                Log.d("pics id == ", "" + arrayfinal);
+                                photoIds.add(picFinals);
+
+                            }
+                            DetailAdapter adapter = new DetailAdapter(
+                                    MainActivity.this, R.layout.grid_item,
+                                    photoIds);
+                            gridView.setAdapter(adapter);
+
+                        } catch (JSONException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "id,picture");
+        parameters.putString("limit", "100");
+        request.setParameters(parameters);
+        request.executeAsync();
+
+    }
+
+/*
+    // Private method to handle Facebook login and callback
+    private void onFblogin() {
+        mCallbackManager = CallbackManager.Factory.create();
+
+        // Set permissions
+        LoginManager.getInstance().logInWithReadPermissions(this,
+                permissionNeeds);
+
+        LoginManager.getInstance().registerCallback(mCallbackManager,
+                new FacebookCallback<LoginResult>() {
+
+                    @Override
+                    public void onSuccess(final LoginResult loginResult) {
+
+                        System.out.println("Success");
+                        GraphRequest.newMeRequest(loginResult.getAccessToken(),
+                                new GraphRequest.GraphJSONObjectCallback() {
+                                    @Override
+                                    public void onCompleted(JSONObject json,
+                                                            GraphResponse response) {
+
+                                        if (response.getError() != null) {
+                                            // handle error
+                                            System.out.println("ERROR");
+                                        } else {
+                                            System.out.println("Success");
+                                            try {
+
+                                                String jsonresult = String
+                                                        .valueOf(json);
+                                                Log.e("Login Data", jsonresult);
+                                                Log.e("loginResult 1",
+                                                        loginResult + "");
+
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
+                                            }
+                                        }
+                                    }
+
+                                }).executeAsync();
+
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        Log.d("cancel", "On cancel");
+                    }
+
+                    @Override
+                    public void onError(FacebookException error) {
+                        Log.d("error login-", error.toString());
+                    }
+                });
+    }*/
 
 }
