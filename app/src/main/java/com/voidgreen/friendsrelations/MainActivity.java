@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -53,6 +54,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Bind(R.id.login_button)LoginButton loginButton;
     @Bind(R.id.user_name) TextView userName;
+    @Bind(R.id.editText)
+    EditText albumNumber;
     //@Bind(R.id.profilePicture)
     private ProfilePictureView profilePictureView;;
     //@Bind(R.id.userName)
@@ -400,20 +403,50 @@ public class MainActivity extends AppCompatActivity {
     private void getAlbum_picture(ArrayList<String> albumIds) {
 
         GraphRequest request = GraphRequest.newGraphPathRequest(
-                AccessToken.getCurrentAccessToken(), "/" + albumIds.get(0)
+                AccessToken.getCurrentAccessToken(), "/" + albumIds.get(Integer.parseInt(albumNumber.getText().toString()))
                         + "/photos/", new GraphRequest.Callback() {
                     @Override
                     public void onCompleted(GraphResponse response) {
                         JSONObject object = response.getJSONObject();
+                        Log.d(TAG, "onCompleted: " + object);
                         try {
-                            JSONArray data_array1 = object.getJSONArray("data");
+                            final JSONArray data_array1 = object.getJSONArray("data");
+
                             for (int i = 0; i < data_array1.length(); i++) {
+
                                 JSONObject _pubKey = data_array1
                                         .getJSONObject(i);
-                                String arrayfinal = _pubKey.getString("id");
-                                String picFinals = _pubKey.getString("picture");
-                                Log.d("pics id == ", "" + arrayfinal);
-                                photoIds.add(picFinals);
+                                String photoID = _pubKey.getString("id");
+                                JSONArray images = _pubKey.getJSONArray("images");
+                                Log.d(TAG, "onCompleted: " + images);
+                                photoIds.add(images.getJSONObject(0).getString("source"));
+                                //String photoImages = _pubKey.get("images");
+
+                                //Bundle photoParameters = new Bundle();
+                                //photoParameters.putString("fields", "source");
+                                //photoParameters.putString("limit", "100");
+                                /*GraphRequest photoSourceRequest = new GraphRequest(
+                                        AccessToken.getCurrentAccessToken(),
+                                        photoImages + "?fields=source",
+                                        null,
+                                        HttpMethod.GET,
+                                        new GraphRequest.Callback() {
+                                            public void onCompleted(GraphResponse response) {
+                                                Log.d(TAG, "onCompleted: " + response);
+                                                   JSONObject object = response.getJSONObject();
+                                                try {
+                                                    String source = object.getString("source");
+                                                    photoIds.add(source);
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        }
+                                );*/
+                                //photoSourceRequest.setParameters(photoParameters);
+                                //photoSourceRequest.executeAsync();
+                                Log.d("pics id == ", "" + photoID);
+                               
 
                             }
                             DetailAdapter adapter = new DetailAdapter(
@@ -429,7 +462,7 @@ public class MainActivity extends AppCompatActivity {
                 });
 
         Bundle parameters = new Bundle();
-        parameters.putString("fields", "id,picture");
+        parameters.putString("fields", "id,images");
         parameters.putString("limit", "100");
         request.setParameters(parameters);
         request.executeAsync();
