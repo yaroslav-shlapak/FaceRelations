@@ -34,9 +34,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_gravity="center_horizontal"
-            android:weightSum="1">
+            android:orientation="vertical">
 
             <com.facebook.login.widget.LoginButton
                 android:id="@+id/login_button"
@@ -51,23 +49,23 @@
                 android:layout_height="wrap_content"
                 android:textSize="10sp" />
 
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="numberSigned"
-                android:ems="10"
-                android:id="@+id/editText" />
 
             <Button
                 android:id="@+id/get_album"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/get_album" />
+                android:text="@string/get_album"
+                android:layout_weight="3" />
 
             <GridView
-                android:layout_width="wrap_content"
-                android:layout_height="355dp"
-                android:id="@+id/gridView" />
+                android:id="@+id/gridView"
+                android:layout_width="match_parent"
+                android:layout_height="fill_parent"
+                android:verticalSpacing="0dp"
+                android:horizontalSpacing="0dp"
+                android:stretchMode="columnWidth"
+                android:numColumns="2"
+                android:background="#000000" />
 
         </LinearLayout>
 

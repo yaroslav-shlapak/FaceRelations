@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Bind(R.id.login_button)LoginButton loginButton;
     @Bind(R.id.user_name) TextView userName;
-    @Bind(R.id.editText)
     EditText albumNumber;
     //@Bind(R.id.profilePicture)
     private ProfilePictureView profilePictureView;;
@@ -74,6 +73,9 @@ public class MainActivity extends AppCompatActivity {
     private List<String> permisionsList = Arrays.asList("public_profile", "user_photos");
     private ArrayList<String> albumIds = new ArrayList<>();
     private ArrayList<String> photoIds = new ArrayList<>();
+    private ArrayList<String> coverIds = new ArrayList<>();
+
+    private ArrayList<Album> albumsList = new ArrayList<>();
     private GridView gridView;
 
     private GridAdapter gridAdapter;
@@ -195,13 +197,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 /*
-        if(photosList == null) {
-            gridAdapter = new GridAdapter(getApplicationContext(), photosList);
-            gridView.setAdapter(gridAdapter);
-        } else {
-            photosList.addAll(tempList);
-            gridAdapter.notifyDataSetChanged();
-        }
+
         pageNumber = photosList.size() / tempList.size() + 1;
         loadingFlag = false;*/
 
@@ -265,12 +261,15 @@ public class MainActivity extends AppCompatActivity {
                                 JSONObject _pubKey = data_array
                                         .getJSONObject(i);
                                 String albumId = _pubKey.getString("id");
+                                String albumName = _pubKey.getString("name");
                                 Log.d("FB ALbum ID ==  ", "" + albumId);
                                 albumIds.add(albumId);
+                                albumsList.add(new Album(albumId, albumName));
 
                             }
                             //getAlbumPictures(albumIds); // /getting picsssss
-                            getAlbumCover(albumIds);
+                            //getAlbumCover(albumIds);
+                            getAlbums(albumsList);
                         } catch (JSONException E) {
                             E.printStackTrace();
                         }
@@ -355,28 +354,69 @@ public class MainActivity extends AppCompatActivity {
 
     }
     // get albums ids -> get each album by id -> get cover photo id -> get cover photo url
-    private void getAlbumCover(ArrayList<String> albumIds) {
+    private void getAlbumCover(final String coverId, final boolean flag, final Album album) {
 
-        for(int k = 0; k < albumIds.size(); k++) {
+
+        GraphRequest request = GraphRequest.newGraphPathRequest(
+                AccessToken.getCurrentAccessToken(), "/" + coverId, new GraphRequest.Callback() {
+                    @Override
+                    public void onCompleted(GraphResponse response) {
+                        JSONObject object = response.getJSONObject();
+                        Log.d(TAG, "onCompleted: " + object);
+                        try {
+
+                                JSONArray images = object.getJSONArray("images");
+                                String source = images.getJSONObject(0).getString("source");
+                                Log.d(TAG, "onCompleted: " + source);
+                                album.addPhotoUrl(source);
+                                coverIds.add(source);
+                            if(flag) {
+                                GridAdapter adapter = new GridAdapter(
+                                        MainActivity.this, coverIds);
+                                gridView.setAdapter(adapter);
+                            }
+
+                        } catch (JSONException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "id,images");
+        parameters.putString("limit", "100");
+        request.setParameters(parameters);
+        request.executeAsync();
+    }
+
+
+
+
+    private void getAlbums(final ArrayList<Album> albumsList) {
+
+        for(int k = 0; k < albumsList.size(); k++) {
+            final int kCopy = k;
             GraphRequest request = GraphRequest.newGraphPathRequest(
-                    AccessToken.getCurrentAccessToken(), "/" + albumIds.get(k)
-                            + "/picture/", new GraphRequest.Callback() {
+                    AccessToken.getCurrentAccessToken(), "/" + albumsList.get(k).getId(), new GraphRequest.Callback() {
                         @Override
                         public void onCompleted(GraphResponse response) {
                             JSONObject object = response.getJSONObject();
+                            Log.d(TAG, " getAlbums onCompleted: " + object);
                             try {
-                                JSONObject dataObject = object.getJSONObject("data");
-                                String coverUrl = dataObject.getString("url");
-                                Log.d(TAG, " getAlbumCover onCompleted: " + coverUrl);
+                                final JSONObject coverPhotoObject = object.getJSONObject("cover_photo");
+                                String coverId = coverPhotoObject.getString("id");
+                                getAlbumCover(coverId, kCopy == albumsList.size() - 1 ? true : false, albumsList.get(kCopy));
+                                //JSONObject dataObject = dataArray.getJSONObject("cover_photo");
+                                //String coverUrl = dataObject.getString("url");
+                                //Log.d(TAG, " getAlbumCover onCompleted: " + coverUrl);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
                         }
                     });
-
             Bundle parameters = new Bundle();
-            parameters.putString("type", "small");
-            parameters.putBoolean("redirect", false);
+            parameters.putString("fields", "id, cover_photo");
             request.setParameters(parameters);
             request.executeAsync();
         }

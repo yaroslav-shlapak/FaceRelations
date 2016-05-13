@@ -9,9 +9,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
-//import com.agileengine.testgallery.R;
-//import com.agileengine.testgallery.data.Photo;
-//import com.squareup.picasso.Picasso;
+import com.voidgreen.facerelations.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -44,22 +43,22 @@ public class GridAdapter extends BaseAdapter {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
 
-        View view = null;
-        /*
+        View view;
+
         if (convertView == null) {
             LayoutInflater inflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
-            view = inflater.inflate(R.layout.item_file, parent, false);
+            view = inflater.inflate(R.layout.grid_item, parent, false);
         } else {
             view = convertView;
         }
 
-        Photo photo = photos.get(position);
-        imageView = (ImageView) view.findViewById(R.id.img);
+        String url = photos.get(position);
+        imageView = (ImageView) view.findViewById(R.id.imageView);
         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         imageView.setPadding(5, 5, 5, 5);
 
-        Picasso.with(context).load(photo.getImage_url()).into(imageView);
-*/
+        Picasso.with(context).load(url)
+                .resize(0, 300).into(imageView);
         return view;
     }
 
