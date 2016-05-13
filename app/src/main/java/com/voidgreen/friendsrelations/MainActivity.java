@@ -1,8 +1,9 @@
 package com.voidgreen.friendsrelations;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
@@ -16,7 +17,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,11 +27,8 @@ import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
-import com.facebook.GraphRequestAsyncTask;
 import com.facebook.GraphResponse;
-import com.facebook.HttpMethod;
 import com.facebook.Profile;
-import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.facebook.login.widget.ProfilePictureView;
@@ -41,9 +38,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import butterknife.Bind;
@@ -67,19 +66,18 @@ public class MainActivity extends AppCompatActivity {
     @Bind(R.id.get_album) Button getAlbum;
     private Button updateStatusButton;
 
-
     private CallbackManager callbackManager;
 
     private AccessTokenTracker accessTokenTracker;
     private AccessToken accessToken;
 
-    private ArrayList<String> albumsIds;
-
-
     private List<String> permisionsList = Arrays.asList("public_profile", "user_photos");
     private ArrayList<String> albumIds = new ArrayList<>();
     private ArrayList<String> photoIds = new ArrayList<>();
     private GridView gridView;
+
+    private GridAdapter gridAdapter;
+    private List<String> photosList;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -143,13 +141,6 @@ public class MainActivity extends AppCompatActivity {
                             drawerUserName.setText(profile.getFirstName() + " " + profile.getLastName());
                             profilePictureView.setProfileId(profile.getId());
                         }
-                        /*userName.setText("User ID: "
-                                + loginResult.getAccessToken().getUserId()
-                                + "\n" +
-                                "Auth Token: "
-                                + loginResult.getAccessToken().getToken());*/
-                        //Toast.makeText(MainActivity.this, profile.getFirstName(), Toast.LENGTH_SHORT).show();
-
                     }
 
                     @Override
@@ -166,13 +157,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
 
-
         Profile profile = Profile.getCurrentProfile();
         if(profile != null) {
             userName.setText(profile.getFirstName() + " " + profile.getLastName());
             drawerUserName.setText(profile.getFirstName() + " " + profile.getLastName());
             profilePictureView.setProfileId(profile.getId());
         }
+
         accessTokenTracker = new AccessTokenTracker() {
             @Override
             protected void onCurrentAccessTokenChanged(
@@ -203,125 +194,19 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
 /*
-        GraphRequest request = GraphRequest.newMeRequest(
-                accessToken,
-                new GraphRequest.GraphJSONObjectCallback() {
-                    @Override
-                    public void onCompleted(
-                            JSONObject object,
-                            GraphResponse response) {
-                        try {
-
-                            if(object != null) {
-                                Log.d(TAG, object.toString());
-                                JSONObject newresponse = object.getJSONObject("albums");
-                                //Log.d(TAG, newresponse + "");
-                                JSONArray array = newresponse.getJSONArray("data");
-                                //Log.d(TAG, array.length() + "");
-
-
-                                //for (int i = 0; i < array.length(); i++) {
-                                    JSONObject res = array.getJSONObject(0);
-                                    //Log.d(TAG, res.getString("created_time"));
-                                    //Log.d(TAG, res.getString("name"));
-                                    Log.d(TAG, res.getString("id"));
-                                    albumsIds.add(res.getString("id"));
-
-                                    new GraphRequest(
-                                            AccessToken.getCurrentAccessToken(),
-                                            "/" + albumsIds.get(0) + "/photos",
-                                            null,
-                                            HttpMethod.GET,
-                                            new GraphRequest.Callback() {
-                                                public void onCompleted(GraphResponse response) {
-
-
-                                                    JSONObject photosObject = response.getJSONObject();
-                                                    JSONArray photosArray = null;
-                                                    Log.d(TAG, photosObject.toString());
-                                                    try {
-                                                        photosArray = photosObject.getJSONArray("data");
-                                                    } catch (JSONException e) {
-                                                        e.printStackTrace();
-                                                    }
-                                                    GraphRequest photoRequest;
-                                                    for (int i = 0; i < photosArray.length(); i++) {
-                                                        try {
-                                                            JSONObject photoData = photosArray.getJSONObject(i);
-                                                            String photoId = photoData.getString("id");
-                                                            Log.d(TAG, photoId);
+        if(photosList == null) {
+            gridAdapter = new GridAdapter(getApplicationContext(), photosList);
+            gridView.setAdapter(gridAdapter);
+        } else {
+            photosList.addAll(tempList);
+            gridAdapter.notifyDataSetChanged();
+        }
+        pageNumber = photosList.size() / tempList.size() + 1;
+        loadingFlag = false;*/
 
 
 
-                                                            Bundle photoParameters = new Bundle();
-                                                            photoParameters.putString("fields", "link");
-
-
-                                                            photoRequest = new GraphRequest(
-                                                                    AccessToken.getCurrentAccessToken(),
-                                                                    "/" + photoId,
-                                                                    null,
-                                                                    HttpMethod.GET,
-                                                                    new GraphRequest.Callback() {
-
-                                                                        @Override
-                                                                        public void onCompleted(GraphResponse response) {
-                                                                            JSONObject data = response.getJSONObject();
-                                                                            try {
-                                                                                Log.d(TAG, data.getString("link"));
-                                                                            } catch (JSONException e) {
-                                                                                e.printStackTrace();
-                                                                            }
-                                                                        }
-                                                                    }
-                                                            );
-
-                                                            photoRequest.setParameters(photoParameters);
-                                                            photoRequest.executeAsync();
-
-                                                        } catch (JSONException e) {
-                                                            e.printStackTrace();
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                    ).executeAsync();
-
-                                //}
-                            }
-                        } catch (JSONException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    }
-                });
-        Bundle parameters = new Bundle();
-        parameters.putString("fields", "albums");
-        request.setParameters(parameters);
-        request.executeAsync();*/
-
-
-
-/*
-        Bundle photoParameters = new Bundle();
-        photoParameters.putString("fields", "id,link");
-        GraphRequest photoRequest =  new GraphRequest(
-                AccessToken.getCurrentAccessToken(),
-                "/" + photoId,
-                null,
-                HttpMethod.GET,
-                new GraphRequest.Callback() {
-                    public void onCompleted(GraphResponse response) {
-                        Log.d(TAG, "Whoa");
-                        Log.d(TAG, response.toString());
-
-                    }
-                }
-        );
-        photoRequest.setParameters(photoParameters);
-        photoRequest.executeAsync();*/
     }
 
     @Override
@@ -375,16 +260,17 @@ public class MainActivity extends AppCompatActivity {
                                     .getString("albums"));
 
                             JSONArray data_array = albums.getJSONArray("data");
-
+                            Log.d("data_array ==  ", "" + data_array);
                             for (int i = 0; i < data_array.length(); i++) {
                                 JSONObject _pubKey = data_array
                                         .getJSONObject(i);
-                                String arrayfinal = _pubKey.getString("id");
-                                Log.d("FB ALbum ID ==  ", "" + arrayfinal);
-                                albumIds.add(arrayfinal);
+                                String albumId = _pubKey.getString("id");
+                                Log.d("FB ALbum ID ==  ", "" + albumId);
+                                albumIds.add(albumId);
 
                             }
-                            getAlbum_picture(albumIds); // /getting picsssss
+                            //getAlbumPictures(albumIds); // /getting picsssss
+                            getAlbumCover(albumIds);
                         } catch (JSONException E) {
                             E.printStackTrace();
                         }
@@ -400,7 +286,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void getAlbum_picture(ArrayList<String> albumIds) {
+    private void getAlbumPictures(ArrayList<String> albumIds) {
 
         GraphRequest request = GraphRequest.newGraphPathRequest(
                 AccessToken.getCurrentAccessToken(), "/" + albumIds.get(Integer.parseInt(albumNumber.getText().toString()))
@@ -468,62 +354,33 @@ public class MainActivity extends AppCompatActivity {
         request.executeAsync();
 
     }
+    // get albums ids -> get each album by id -> get cover photo id -> get cover photo url
+    private void getAlbumCover(ArrayList<String> albumIds) {
 
-/*
-    // Private method to handle Facebook login and callback
-    private void onFblogin() {
-        mCallbackManager = CallbackManager.Factory.create();
+        for(int k = 0; k < albumIds.size(); k++) {
+            GraphRequest request = GraphRequest.newGraphPathRequest(
+                    AccessToken.getCurrentAccessToken(), "/" + albumIds.get(k)
+                            + "/picture/", new GraphRequest.Callback() {
+                        @Override
+                        public void onCompleted(GraphResponse response) {
+                            JSONObject object = response.getJSONObject();
+                            try {
+                                JSONObject dataObject = object.getJSONObject("data");
+                                String coverUrl = dataObject.getString("url");
+                                Log.d(TAG, " getAlbumCover onCompleted: " + coverUrl);
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
 
-        // Set permissions
-        LoginManager.getInstance().logInWithReadPermissions(this,
-                permissionNeeds);
+            Bundle parameters = new Bundle();
+            parameters.putString("type", "small");
+            parameters.putBoolean("redirect", false);
+            request.setParameters(parameters);
+            request.executeAsync();
+        }
 
-        LoginManager.getInstance().registerCallback(mCallbackManager,
-                new FacebookCallback<LoginResult>() {
-
-                    @Override
-                    public void onSuccess(final LoginResult loginResult) {
-
-                        System.out.println("Success");
-                        GraphRequest.newMeRequest(loginResult.getAccessToken(),
-                                new GraphRequest.GraphJSONObjectCallback() {
-                                    @Override
-                                    public void onCompleted(JSONObject json,
-                                                            GraphResponse response) {
-
-                                        if (response.getError() != null) {
-                                            // handle error
-                                            System.out.println("ERROR");
-                                        } else {
-                                            System.out.println("Success");
-                                            try {
-
-                                                String jsonresult = String
-                                                        .valueOf(json);
-                                                Log.e("Login Data", jsonresult);
-                                                Log.e("loginResult 1",
-                                                        loginResult + "");
-
-                                            } catch (Exception e) {
-                                                e.printStackTrace();
-                                            }
-                                        }
-                                    }
-
-                                }).executeAsync();
-
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        Log.d("cancel", "On cancel");
-                    }
-
-                    @Override
-                    public void onError(FacebookException error) {
-                        Log.d("error login-", error.toString());
-                    }
-                });
-    }*/
+    }
 
 }

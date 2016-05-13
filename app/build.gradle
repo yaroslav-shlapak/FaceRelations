@@ -23,18 +23,18 @@ android {
             //storeFile file("C:\\Users\\Void\\Google Drive\\other\\keystore\\binary_key_for_android.jks")
             storeFile file("../../keys/binary_key_for_android.jks")
 
-            storePassword "Gyroscope2012"
+            storePassword KEYSTORE_PASSWORD
             keyAlias "ReleaseKey"
-            keyPassword "Gyroscope2012"
+            keyPassword KEY_PASSWORD
         }
 
         debug {
             //storeFile file("C:\\Users\\Void\\Google Drive\\other\\keystore\\binary_key_for_android.jks")
             storeFile file("../../keys/binary_key_for_android.jks")
 
-            storePassword "Gyroscope2012"
+            storePassword KEYSTORE_PASSWORD
             keyAlias "ReleaseKey"
-            keyPassword "Gyroscope2012"
+            keyPassword KEY_PASSWORD
         }
     }
 }
