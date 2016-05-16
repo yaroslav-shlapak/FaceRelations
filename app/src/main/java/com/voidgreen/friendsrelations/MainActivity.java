@@ -1,6 +1,8 @@
 package com.voidgreen.friendsrelations;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -12,6 +14,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
 
     private AccessTokenTracker accessTokenTracker;
     private AccessToken accessToken;
+    private View headerView;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -84,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
             }
         });
 
-        View headerView = view.inflateHeaderView(R.layout.drawer_header);
+        headerView = view.inflateHeaderView(R.layout.drawer_header);
         profilePictureView = (ProfilePictureView) headerView.findViewById(R.id.profilePicture);
         drawerUserName = (TextView) headerView.findViewById(R.id.userName);
 
@@ -202,6 +207,12 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         if(profile != null) {
             drawerUserName.setText(profile.getFirstName() + " " + profile.getLastName());
             profilePictureView.setProfileId(profile.getId());
+        } else {
+            Toast.makeText(MainActivity.this, "onFragmentInteraction", Toast.LENGTH_SHORT).show();
+
+            drawerUserName.setText("");
+            profilePictureView.setProfileId(null);
+
         }
     }
 }

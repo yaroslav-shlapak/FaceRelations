@@ -212,10 +212,6 @@ public class AlbumsFragment extends Fragment {
 
 
                             }
-                            DetailAdapter adapter = new DetailAdapter(
-                                    getContext(), R.layout.grid_item,
-                                    photoIds);
-                            gridView.setAdapter(adapter);
 
                         } catch (JSONException e) {
                             // TODO Auto-generated catch block

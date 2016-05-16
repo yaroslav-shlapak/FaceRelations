@@ -2,7 +2,6 @@ package com.voidgreen.friendsrelations;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.DrawerLayout;
@@ -57,7 +56,7 @@ public class LoginFragment extends Fragment {
 
     private List<String> permisionsList = Arrays.asList("public_profile", "user_photos");
 
-    private OnFragmentInteractionListener mListener;
+    private OnFragmentInteractionListener onFragmentInteractionListener;
 
     public LoginFragment() {
         // Required empty public constructor
@@ -91,16 +90,37 @@ public class LoginFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_login, container, false);
         ButterKnife.bind(this, view);
+        Log.d(MainActivity.TAG, "onCreateView onFragmentInteractionListener = " + onFragmentInteractionListener);
 
-        loginButton.setReadPermissions(permisionsList);
+        accessTokenTracker = new AccessTokenTracker() {
+            @Override
+            protected void onCurrentAccessTokenChanged(
+                    AccessToken oldAccessToken,
+                    AccessToken currentAccessToken) {
+                // Set the access token using
+                // currentAccessToken when it's loaded or set.
+                if(currentAccessToken == null) {
+                    Log.d(MainActivity.TAG, "onCurrentAccessTokenChanged onFragmentInteractionListener = " + onFragmentInteractionListener);
+                    onFragmentInteractionListener.onFragmentInteraction(null);
+                } else {
+                    accessToken = currentAccessToken;
+                }
+            }
+        };
+        // If the access token is available already assign it.
+        accessToken = AccessToken.getCurrentAccessToken();
+        if(accessToken != null) {
+            Log.d(MainActivity.TAG, "permitions: " + accessToken.getPermissions());
+        } else {
+            Log.d(MainActivity.TAG, "accessToken: is null ");
+        }
+
         loginButton.registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
-                        // App code
 
-                        //Toast.makeText(MainActivity.this, "onSuccess", Toast.LENGTH_SHORT).show();
-                        mListener.onFragmentInteraction(Profile.getCurrentProfile());
+                        onFragmentInteractionListener.onFragmentInteraction(Profile.getCurrentProfile());
                     }
 
                     @Override
@@ -117,27 +137,6 @@ public class LoginFragment extends Fragment {
                     }
                 });
 
-        mListener.onFragmentInteraction(Profile.getCurrentProfile());
-
-        accessTokenTracker = new AccessTokenTracker() {
-            @Override
-            protected void onCurrentAccessTokenChanged(
-                    AccessToken oldAccessToken,
-                    AccessToken currentAccessToken) {
-                // Set the access token using
-                // currentAccessToken when it's loaded or set.
-                accessToken = currentAccessToken;
-            }
-        };
-        // If the access token is available already assign it.
-        accessToken = AccessToken.getCurrentAccessToken();
-        if(accessToken != null) {
-            Log.d(MainActivity.TAG, "permitions: " + accessToken.getPermissions());
-        } else {
-            Log.d(MainActivity.TAG, "accessToken: is null ");
-        }
-
-
         return view;
 
     }
@@ -146,8 +145,10 @@ public class LoginFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        Log.d(MainActivity.TAG, "onAttach");
         if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+            onFragmentInteractionListener = (OnFragmentInteractionListener) context;
+            Log.d(MainActivity.TAG, "onCurrentAccessTokenChanged onFragmentInteractionListener = " + onFragmentInteractionListener);
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -157,7 +158,8 @@ public class LoginFragment extends Fragment {
     @Override
     public void onDetach() {
         super.onDetach();
-        mListener = null;
+        Log.d(MainActivity.TAG, "onDetach");
+        onFragmentInteractionListener = null;
     }
 
     /**
