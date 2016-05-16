@@ -58,7 +58,7 @@ public class GridAdapter extends BaseAdapter {
         imageView.setPadding(5, 5, 5, 5);
 
         Picasso.with(context).load(url)
-                .resize(0, 300).into(imageView);
+                .resize(0, 200).into(imageView);
         return view;
     }
 
