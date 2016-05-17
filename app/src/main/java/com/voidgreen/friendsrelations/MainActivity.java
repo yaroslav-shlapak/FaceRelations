@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
+    //https://github.com/facebook/facebook-android-sdk/blob/b384c0655fe96db71229bfdcb981a522f3f1e675/samples/Scrumptious/src/com/facebook/scrumptious/MainActivity.java#L62
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,7 +106,33 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
             }
         });
 
+        accessTokenTracker = new AccessTokenTracker() {
+            @Override
+            protected void onCurrentAccessTokenChanged(
+                    AccessToken oldAccessToken,
+                    AccessToken currentAccessToken) {
+                // Set the access token using
+                // currentAccessToken when it's loaded or set.
+                if(currentAccessToken == null) {
+                    onFragmentInteraction(null);
+                } else {
+                    accessToken = currentAccessToken;
+                }
+            }
+        };
+        // If the access token is available already assign it.
         accessToken = AccessToken.getCurrentAccessToken();
+
+        if(accessToken != null) {
+            albumsFragment = new AlbumsFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_placeholder, albumsFragment).commit();
+        } else {
+            loginFragment = new LoginFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_placeholder, loginFragment).commit();
+        }
+        /*
         //handle fragments
         if (savedInstanceState == null) {
             // Add the fragment on initial activity setup
@@ -127,13 +154,13 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
                 loginFragment = (LoginFragment) getSupportFragmentManager()
                         .findFragmentById(R.id.fragment_placeholder);
             } else {
-                albumsFragment = (AlbumsFragment)  getSupportFragmentManager()
+                albumsFragment = (AlbumsFragment) getSupportFragmentManager()
                         .findFragmentById(R.id.fragment_placeholder);
             }
 
             // Or set the fragment from restored state info
 
-        }
+        }*/
 
         //handle facebook authentification
         Profile profile = Profile.getCurrentProfile();
@@ -215,15 +242,13 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
 
     @Override
     public void onFragmentInteraction(Profile profile) {
+        Toast.makeText(MainActivity.this, "MainActivity onFragmentInteraction", Toast.LENGTH_SHORT).show();
         if(profile != null) {
             drawerUserName.setText(profile.getFirstName() + " " + profile.getLastName());
             profilePictureView.setProfileId(profile.getId());
             showAlbumsFragment();
-
         } else {
-            Toast.makeText(MainActivity.this, "onFragmentInteraction", Toast.LENGTH_SHORT).show();
-
-            drawerUserName.setText("");
+            drawerUserName.setText("Username");
             profilePictureView.setProfileId(null);
             showLoginFragment();
 

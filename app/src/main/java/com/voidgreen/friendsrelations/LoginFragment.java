@@ -42,10 +42,7 @@ import butterknife.ButterKnife;
 public class LoginFragment extends Fragment {
 
     @Bind(R.id.login_button)LoginButton loginButton;
-    private ProfilePictureView profilePictureView;;
-    private TextView drawerUserName;
 
-    private DrawerLayout drawerLayout;
     private View content;
 
     private AccessTokenTracker accessTokenTracker;
@@ -92,25 +89,6 @@ public class LoginFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_login, container, false);
         ButterKnife.bind(this, view);
 
-
-
-        accessTokenTracker = new AccessTokenTracker() {
-            @Override
-            protected void onCurrentAccessTokenChanged(
-                    AccessToken oldAccessToken,
-                    AccessToken currentAccessToken) {
-                // Set the access token using
-                // currentAccessToken when it's loaded or set.
-                Log.d(MainActivity.TAG, "onCreateView onFragmentInteractionListener = " + onFragmentInteractionListener);
-                if(currentAccessToken == null) {
-                    onFragmentInteractionListener.onFragmentInteraction(null);
-                } else {
-                    accessToken = currentAccessToken;
-                }
-            }
-        };
-        // If the access token is available already assign it.
-        accessToken = AccessToken.getCurrentAccessToken();
 
         loginButton.registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
