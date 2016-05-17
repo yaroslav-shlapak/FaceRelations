@@ -31,7 +31,7 @@ import com.facebook.login.LoginResult;
 import com.facebook.login.widget.ProfilePictureView;
 import com.voidgreen.facerelations.R;
 
-public class MainActivity extends AppCompatActivity implements LoginFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements LoginFragment.OnFragmentInteractionListener, AlbumsFragment.OnFragmentInteractionListener {
     public static final String TAG = "FaceRelations";
 
     private LoginFragment loginFragment;
@@ -227,5 +227,10 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
             profilePictureView.setProfileId(null);
 
         }
+    }
+
+    @Override
+    public void onFragmentInteraction() {
+
     }
 }
