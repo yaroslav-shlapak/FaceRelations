@@ -93,16 +93,35 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         profilePictureView = (ProfilePictureView) headerView.findViewById(R.id.profilePicture);
         drawerUserName = (TextView) headerView.findViewById(R.id.userName);
 
+
+        accessToken = AccessToken.getCurrentAccessToken();
         //handle fragments
         if (savedInstanceState == null) {
             // Add the fragment on initial activity setup
-            loginFragment = new LoginFragment();
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_placeholder, loginFragment).commit();
+
+            // If the access token is available already assign it.
+
+            if(accessToken != null) {
+                albumsFragment = new AlbumsFragment();
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.fragment_placeholder, albumsFragment).commit();
+            } else {
+                loginFragment = new LoginFragment();
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.fragment_placeholder, loginFragment).commit();
+            }
+
         } else {
+            if(accessToken != null) {
+                loginFragment = (LoginFragment) getSupportFragmentManager()
+                        .findFragmentById(R.id.fragment_placeholder);
+            } else {
+                albumsFragment = (AlbumsFragment)  getSupportFragmentManager()
+                        .findFragmentById(R.id.fragment_placeholder);
+            }
+
             // Or set the fragment from restored state info
-            loginFragment = (LoginFragment) getSupportFragmentManager()
-                    .findFragmentById(R.id.fragment_placeholder);
+
         }
 
         //handle facebook authentification
@@ -142,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
                     });
         }
 
-        accessTokenTracker = new AccessTokenTracker() {
+        /*accessTokenTracker = new AccessTokenTracker() {
             @Override
             protected void onCurrentAccessTokenChanged(
                     AccessToken oldAccessToken,
@@ -152,14 +171,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
                 accessToken = currentAccessToken;
                 //Log.d(TAG, "permitions: " + accessToken.getPermissions());
             }
-        };
-        // If the access token is available already assign it.
-        accessToken = AccessToken.getCurrentAccessToken();
-        if(accessToken != null) {
-            //Log.d(TAG, "permitions: " + accessToken.getPermissions());
-        } else {
-            //Log.d(TAG, "accessToken: is null ");
-        }
+        };*/
+
 
     }
 
