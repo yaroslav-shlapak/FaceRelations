@@ -12,6 +12,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -93,6 +94,15 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         profilePictureView = (ProfilePictureView) headerView.findViewById(R.id.profilePicture);
         drawerUserName = (TextView) headerView.findViewById(R.id.userName);
 
+        final Bundle bundle = savedInstanceState;
+        profilePictureView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                showLoginFragment();
+
+            }
+        });
 
         accessToken = AccessToken.getCurrentAccessToken();
         //handle fragments
@@ -161,19 +171,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
                     });
         }
 
-        /*accessTokenTracker = new AccessTokenTracker() {
-            @Override
-            protected void onCurrentAccessTokenChanged(
-                    AccessToken oldAccessToken,
-                    AccessToken currentAccessToken) {
-                // Set the access token using
-                // currentAccessToken when it's loaded or set.
-                accessToken = currentAccessToken;
-                //Log.d(TAG, "permitions: " + accessToken.getPermissions());
-            }
-        };*/
-
-
     }
 
     @Override
@@ -198,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        accessTokenTracker.stopTracking();
+        //accessTokenTracker.stopTracking();
     }
 
 
@@ -220,11 +217,14 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         if(profile != null) {
             drawerUserName.setText(profile.getFirstName() + " " + profile.getLastName());
             profilePictureView.setProfileId(profile.getId());
+            showAlbumsFragment();
+
         } else {
             Toast.makeText(MainActivity.this, "onFragmentInteraction", Toast.LENGTH_SHORT).show();
 
             drawerUserName.setText("");
             profilePictureView.setProfileId(null);
+            showLoginFragment();
 
         }
     }
@@ -232,5 +232,17 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
     @Override
     public void onFragmentInteraction() {
 
+    }
+
+    private void showLoginFragment() {
+        loginFragment = new LoginFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_placeholder, loginFragment).commit();
+    }
+
+    private void showAlbumsFragment() {
+        albumsFragment = new AlbumsFragment();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_placeholder, albumsFragment).commit();
     }
 }
