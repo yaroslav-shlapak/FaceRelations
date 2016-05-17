@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
             public void onClick(View v) {
 
                 showLoginFragment();
+                drawerLayout.closeDrawers();
 
             }
         });

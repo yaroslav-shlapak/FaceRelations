@@ -1,5 +1,6 @@
 package com.voidgreen.friendsrelations;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -90,7 +91,7 @@ public class LoginFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_login, container, false);
         ButterKnife.bind(this, view);
-        Log.d(MainActivity.TAG, "onCreateView onFragmentInteractionListener = " + onFragmentInteractionListener);
+
 
 
         accessTokenTracker = new AccessTokenTracker() {
@@ -100,6 +101,7 @@ public class LoginFragment extends Fragment {
                     AccessToken currentAccessToken) {
                 // Set the access token using
                 // currentAccessToken when it's loaded or set.
+                Log.d(MainActivity.TAG, "onCreateView onFragmentInteractionListener = " + onFragmentInteractionListener);
                 if(currentAccessToken == null) {
                     onFragmentInteractionListener.onFragmentInteraction(null);
                 } else {
@@ -146,6 +148,19 @@ public class LoginFragment extends Fragment {
             Log.d(MainActivity.TAG, "onCurrentAccessTokenChanged onFragmentInteractionListener = " + onFragmentInteractionListener);
         } else {
             throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        Log.d(MainActivity.TAG, "onAttach");
+        if (activity instanceof OnFragmentInteractionListener) {
+            onFragmentInteractionListener = (OnFragmentInteractionListener) activity;
+            Log.d(MainActivity.TAG, "onCurrentAccessTokenChanged onFragmentInteractionListener = " + onFragmentInteractionListener);
+        } else {
+            throw new RuntimeException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
         }
     }
