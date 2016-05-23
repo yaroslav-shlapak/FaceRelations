@@ -15,11 +15,21 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <FrameLayout
-            android:id="@+id/fragment_placeholder"
+        <fragment
+            android:name="com.voidgreen.friendsrelations.AlbumsFragment"
+            android:id="@+id/albumsFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        </FrameLayout>
+            android:layout_height="match_parent" />
+        <fragment
+            android:name="com.voidgreen.friendsrelations.LoginFragment"
+            android:id="@+id/loginFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <fragment
+            android:name="com.voidgreen.friendsrelations.PhotosFragment"
+            android:id="@+id/photosFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />-->
 
 
 

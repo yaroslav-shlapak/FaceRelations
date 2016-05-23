@@ -80,10 +80,7 @@ public class LoginFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
 
-        FacebookSdk.sdkInitialize(getContext());
-        //AppEventsLogger.activateApp(this);
         callbackManager = CallbackManager.Factory.create();
 
         View view = inflater.inflate(R.layout.fragment_login, container, false);
@@ -126,22 +123,22 @@ public class LoginFragment extends Fragment {
             Log.d(MainActivity.TAG, "onCurrentAccessTokenChanged onFragmentInteractionListener = " + onFragmentInteractionListener);
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnPhotosFragmentInteractionListener");
         }
     }
-
+/*
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         Log.d(MainActivity.TAG, "onAttach");
-        if (activity instanceof OnFragmentInteractionListener) {
-            onFragmentInteractionListener = (OnFragmentInteractionListener) activity;
+        if (activity instanceof OnPhotosFragmentInteractionListener) {
+            onFragmentInteractionListener = (OnPhotosFragmentInteractionListener) activity;
             Log.d(MainActivity.TAG, "onCurrentAccessTokenChanged onFragmentInteractionListener = " + onFragmentInteractionListener);
         } else {
             throw new RuntimeException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnPhotosFragmentInteractionListener");
         }
-    }
+    }*/
 
     @Override
     public void onDetach() {
@@ -164,4 +161,5 @@ public class LoginFragment extends Fragment {
         // TODO: Update argument type and name
         void onFragmentInteraction(Profile profile);
     }
+
 }

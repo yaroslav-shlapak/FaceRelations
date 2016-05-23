@@ -1,5 +1,6 @@
 package com.voidgreen.friendsrelations;
 
+
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -7,6 +8,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -32,23 +36,31 @@ import com.facebook.login.LoginResult;
 import com.facebook.login.widget.ProfilePictureView;
 import com.voidgreen.facerelations.R;
 
-public class MainActivity extends AppCompatActivity implements LoginFragment.OnFragmentInteractionListener, AlbumsFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements LoginFragment.OnFragmentInteractionListener, AlbumsFragment.OnFragmentInteractionListener, PhotosFragment.OnPhotosFragmentInteractionListener {
     public static final String TAG = "FaceRelations";
 
-    private LoginFragment loginFragment;
-    private AlbumsFragment albumsFragment;
+    private static final int LOGIN = 0;
+    private static final int ALBUMS_GRID = 1;
+    private static final int PHOTOS_GRID = 2;
+    private static final int FRAGMENT_COUNT = PHOTOS_GRID + 1;
 
-    private ProfilePictureView profilePictureView;;
-    private TextView drawerUserName;
+    private Fragment[] fragments = new Fragment[FRAGMENT_COUNT];
+    private boolean isResumed = false;
+
+    private Fragment loginFragment;
+    private AlbumsFragment albumsFragment;
 
     private DrawerLayout drawerLayout;
     private View content;
+    private View headerView;
 
-    private CallbackManager callbackManager;
+    private ProfilePictureView profilePictureView;
+    private TextView drawerUserName;
 
     private AccessTokenTracker accessTokenTracker;
+    private CallbackManager callbackManager;
     private AccessToken accessToken;
-    private View headerView;
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -61,10 +73,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
+        //set up facebook
         FacebookSdk.sdkInitialize(getApplicationContext());
-        //AppEventsLogger.activateApp(this);
-        callbackManager = CallbackManager.Factory.create();
 
         setContentView(R.layout.activity_main);
 
@@ -99,31 +109,30 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         profilePictureView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 showLoginFragment();
                 drawerLayout.closeDrawers();
-
             }
         });
 
-        accessTokenTracker = new AccessTokenTracker() {
-            @Override
-            protected void onCurrentAccessTokenChanged(
-                    AccessToken oldAccessToken,
-                    AccessToken currentAccessToken) {
-                // Set the access token using
-                // currentAccessToken when it's loaded or set.
-                if(currentAccessToken == null) {
-                    onFragmentInteraction(null);
-                } else {
-                    accessToken = currentAccessToken;
-                }
-            }
-        };
-        // If the access token is available already assign it.
-        accessToken = AccessToken.getCurrentAccessToken();
 
-        if(accessToken != null) {
+        FragmentManager fm = getSupportFragmentManager();
+        loginFragment = (LoginFragment) fm.findFragmentById(R.id.loginFragment);
+        fragments[LOGIN] = (LoginFragment) loginFragment;
+        albumsFragment = (AlbumsFragment) fm.findFragmentById(R.id.albumsFragment);
+        fragments[ALBUMS_GRID] = albumsFragment;
+        fragments[PHOTOS_GRID] = fm.findFragmentById(R.id.photosFragment);
+
+        FragmentTransaction transaction = fm.beginTransaction();
+        for(int i = 0; i < fragments.length; i++) {
+            transaction.hide(fragments[i]);
+        }
+        transaction.commit();
+
+
+        // If the access token is available already assign it.
+        //accessToken = AccessToken.getCurrentAccessToken();
+
+        /*if(accessToken != null) {
             albumsFragment = new AlbumsFragment();
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_placeholder, albumsFragment).commit();
@@ -131,39 +140,48 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
             loginFragment = new LoginFragment();
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_placeholder, loginFragment).commit();
-        }
-        /*
-        //handle fragments
-        if (savedInstanceState == null) {
-            // Add the fragment on initial activity setup
-
-            // If the access token is available already assign it.
-
-            if(accessToken != null) {
-                albumsFragment = new AlbumsFragment();
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.fragment_placeholder, albumsFragment).commit();
-            } else {
-                loginFragment = new LoginFragment();
-                getSupportFragmentManager().beginTransaction()
-                        .add(R.id.fragment_placeholder, loginFragment).commit();
-            }
-
-        } else {
-            if(accessToken != null) {
-                loginFragment = (LoginFragment) getSupportFragmentManager()
-                        .findFragmentById(R.id.fragment_placeholder);
-            } else {
-                albumsFragment = (AlbumsFragment) getSupportFragmentManager()
-                        .findFragmentById(R.id.fragment_placeholder);
-            }
-
-            // Or set the fragment from restored state info
-
         }*/
 
         //handle facebook authentification
         Profile profile = Profile.getCurrentProfile();
+        if(profile != null) {
+            drawerUserName.setText(profile.getFirstName() + " " + profile.getLastName());
+            profilePictureView.setProfileId(profile.getId());
+        }
+
+        callbackManager = CallbackManager.Factory.create();
+
+        accessTokenTracker = new AccessTokenTracker() {
+            @Override
+            protected void onCurrentAccessTokenChanged(
+                    AccessToken oldAccessToken,
+                    AccessToken currentAccessToken) {
+                if (isResumed) {
+                    FragmentManager manager = getSupportFragmentManager();
+                    int backStackSize = manager.getBackStackEntryCount();
+                    for (int i = 0; i < backStackSize; i++) {
+                        manager.popBackStack();
+                    }
+
+                    if (currentAccessToken != null) {
+                        Profile profile = Profile.getCurrentProfile();
+                        drawerUserName.setText(profile.getFirstName() + " " + profile.getLastName());
+                        profilePictureView.setProfileId(profile.getId());
+                        showFragment(ALBUMS_GRID, false);
+                        albumsFragment.updateAlbums();
+                    } else {
+
+                        drawerUserName.setText("Username");
+                        profilePictureView.setProfileId(null);
+                        showFragment(LOGIN, false);
+                    }
+                }
+            }
+        };
+
+
+
+        /*Profile profile = Profile.getCurrentProfile();
         if(profile != null) {
             drawerUserName.setText(profile.getFirstName() + " " + profile.getLastName());
             profilePictureView.setProfileId(profile.getId());
@@ -197,7 +215,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
                             Toast.makeText(MainActivity.this, "error", Toast.LENGTH_SHORT).show();
                         }
                     });
-        }
+        }*/
 
     }
 
@@ -205,28 +223,29 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
     protected void onResume() {
         super.onResume();
 
-        // Call the 'activateApp' method to log an app event for use in analytics and advertising
-        // reporting.  Do so in the onResume methods of the primary Activities that an app may be
-        // launched into.
+        isResumed = true;
+
+        if (AccessToken.getCurrentAccessToken() != null) {
+            // if the user already logged in, try to show the albums fragment
+            showFragment(ALBUMS_GRID, false);
+        } else {
+            // otherwise ask the user to login,
+            showFragment(LOGIN, false);
+        }
 
     }
 
     @Override
     public void onPause() {
         super.onPause();
-
-        // Call the 'deactivateApp' method to log an app event for use in analytics and advertising
-        // reporting.  Do so in the onPause methods of the primary Activities that an app may be
-        // launched into.
+        isResumed = false;
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //accessTokenTracker.stopTracking();
+        accessTokenTracker.stopTracking();
     }
-
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -239,10 +258,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         return super.onOptionsItemSelected(item);
     }
 
-
     @Override
     public void onFragmentInteraction(Profile profile) {
-        Toast.makeText(MainActivity.this, "MainActivity onFragmentInteraction", Toast.LENGTH_SHORT).show();
+        /*Toast.makeText(MainActivity.this, "MainActivity onFragmentInteraction", Toast.LENGTH_SHORT).show();
         if(profile != null) {
             drawerUserName.setText(profile.getFirstName() + " " + profile.getLastName());
             profilePictureView.setProfileId(profile.getId());
@@ -252,7 +270,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
             profilePictureView.setProfileId(null);
             showLoginFragment();
 
-        }
+        }*/
     }
 
     @Override
@@ -261,14 +279,35 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
     }
 
     private void showLoginFragment() {
-        loginFragment = new LoginFragment();
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_placeholder, loginFragment).commit();
+        showFragment(LOGIN, true);
     }
 
     private void showAlbumsFragment() {
-        albumsFragment = new AlbumsFragment();
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_placeholder, albumsFragment).commit();
+        showFragment(ALBUMS_GRID, true);
+    }
+
+    private void showPhotosFragment() {
+        showFragment(PHOTOS_GRID, true);
+    }
+
+    private void showFragment(int fragmentIndex, boolean addToBackStack) {
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction transaction = fm.beginTransaction();
+        for (int i = 0; i < fragments.length; i++) {
+            if (i == fragmentIndex) {
+                transaction.show(fragments[i]);
+            } else {
+                transaction.hide(fragments[i]);
+            }
+        }
+        if (addToBackStack) {
+            transaction.addToBackStack(null);
+        }
+        transaction.commit();
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
     }
 }

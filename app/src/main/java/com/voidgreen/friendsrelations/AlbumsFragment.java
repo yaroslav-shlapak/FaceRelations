@@ -9,10 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.GridView;
+import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
+import com.facebook.Profile;
 import com.voidgreen.facerelations.R;
 
 import org.json.JSONArray;
@@ -80,7 +82,13 @@ public class AlbumsFragment extends Fragment {
 
         gridView = (GridView) view.findViewById(R.id.gridView);
 
-        getAlbumPics();
+        Profile profile = Profile.getCurrentProfile();
+
+        Toast.makeText(getActivity(), "AlbumsFragment onCreateView Profile = " + profile, Toast.LENGTH_SHORT).show();
+        if(profile != null) {
+            getAlbumPics();
+        }
+
 
         return view;
     }
@@ -92,7 +100,7 @@ public class AlbumsFragment extends Fragment {
             mListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnPhotosFragmentInteractionListener");
         }
     }
 
@@ -105,6 +113,15 @@ public class AlbumsFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction();
+    }
+
+    public void updateAlbums() {
+        Profile profile = Profile.getCurrentProfile();
+
+        Toast.makeText(getActivity(), "AlbumsFragment onCreateView Profile = " + profile, Toast.LENGTH_SHORT).show();
+        if(profile != null) {
+            getAlbumPics();
+        }
     }
 
     private void getAlbumPics() {
