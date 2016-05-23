@@ -53,12 +53,19 @@ public class GridAdapter extends BaseAdapter {
         }
 
         String url = photos.get(position);
-        imageView = (ImageView) view.findViewById(R.id.imageView);
-        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        imageView = (SquareImageView) view.findViewById(R.id.imageView);
+        //imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         imageView.setPadding(5, 5, 5, 5);
 
-        Picasso.with(context).load(url)
-                .resize(0, 200).into(imageView);
+        /*Picasso.with(context).load(url)
+                .resize(0, 400).into(imageView);*/
+
+        Picasso.with(context)
+                .load(url)
+                .fit().centerCrop()
+                .error(R.drawable.com_facebook_favicon_white)
+                .placeholder(R.drawable.ic_file_download_black_24dp)
+                .into(imageView);
         return view;
     }
 

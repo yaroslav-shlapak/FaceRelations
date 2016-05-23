@@ -224,7 +224,7 @@ public class AlbumsFragment extends Fragment {
 
         Bundle parameters = new Bundle();
         parameters.putString("fields", "id,images");
-        parameters.putString("limit", "100");
+        parameters.putString("limit", "0");
         request.setParameters(parameters);
         request.executeAsync();
 
@@ -261,7 +261,7 @@ public class AlbumsFragment extends Fragment {
 
         Bundle parameters = new Bundle();
         parameters.putString("fields", "id,images");
-        parameters.putString("limit", "100");
+        parameters.putString("limit", "0");
         request.setParameters(parameters);
         request.executeAsync();
     }
@@ -293,6 +293,7 @@ public class AlbumsFragment extends Fragment {
                     });
             Bundle parameters = new Bundle();
             parameters.putString("fields", "id, cover_photo");
+            parameters.putString("limit", "100");
             request.setParameters(parameters);
             request.executeAsync();
         }
