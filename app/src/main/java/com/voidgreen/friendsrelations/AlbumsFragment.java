@@ -26,6 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.ButterKnife;
+import retrofit.Callback;
+import retrofit.RestAdapter;
+import retrofit.RetrofitError;
+import retrofit.client.Response;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -181,7 +185,35 @@ public class AlbumsFragment extends Fragment {
                     }
                 }
                 //GraphRequest nextRequest = new GraphRequest(AccessToken.getCurrentAccessToken(), new URL(link));
-                GraphRequest nextRequest = new GraphRequest();
+                if (pagingRequest != null) {
+                    busy = true;
+
+                    final RestAdapter restAdapter = new RestAdapter.Builder().setEndpoint(link).build();
+
+                    Api api = restAdapter.create(Api.class);
+
+                    Callback<Page> pageCallback = new Callback<Page>() {
+                        @Override
+                        public void success(Page page, Response response) {
+
+                            List<Album> tempList = page.getData();
+                            albumsList.addAll(tempList);
+                            busy = false;
+                            getAlbums(albumsList);
+                        }
+
+                        @Override
+                        public void failure(RetrofitError error) {
+                            Toast.makeText(getContext(), "Failed " + error, Toast.LENGTH_SHORT).show();
+                            busy = false;
+                            getAlbums(albumsList);
+                        }
+                    };
+
+                    api.getData(pageCallback);
+                }
+
+
                 //Log.d("nextRequest=  ", "" + nextRequest);
                 /*if (pagingRequest != null) {
                     busy = true;

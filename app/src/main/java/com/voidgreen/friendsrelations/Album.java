@@ -9,8 +9,8 @@ public class Album {
 
     private String id;
     private String name;
-    private String coverPhotoUrl;
-    private String creationTime;
+
+    private String created_time;
 
     private ArrayList<String> photosUrls;
 
@@ -36,14 +36,6 @@ public class Album {
         this.name = name;
     }
 
-    public String getCoverPhotoUrl() {
-        return coverPhotoUrl;
-    }
-
-    public void setCoverPhotoUrl(String coverPhotoUrl) {
-        this.coverPhotoUrl = coverPhotoUrl;
-    }
-
     public String getPhotoUrl(int index) {
         return photosUrls.get(index);
     }
@@ -53,6 +45,9 @@ public class Album {
     }
 
     public void addPhotoUrl(String photosUrl) {
+        if(this.photosUrls == null) {
+            this.photosUrls = new ArrayList<>();
+        }
         this.photosUrls.add(photosUrl);
     }
 
