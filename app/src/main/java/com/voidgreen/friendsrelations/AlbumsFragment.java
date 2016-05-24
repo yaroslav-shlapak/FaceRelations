@@ -183,20 +183,19 @@ public class AlbumsFragment extends Fragment {
                 //GraphRequest nextRequest = new GraphRequest(AccessToken.getCurrentAccessToken(), new URL(link));
                 GraphRequest nextRequest = new GraphRequest();
                 //Log.d("nextRequest=  ", "" + nextRequest);
-                if (pagingRequest != null) {
+                /*if (pagingRequest != null) {
                     busy = true;
                     Bundle parameters = new Bundle();
                     parameters.putString("fields", "id,name,albums");
-                    //parameters.putString("limit", "100");
+                    parameters.putString("limit", "100");
                     String after =  pagingRequest.optJSONObject("cursors").optString("after");
                     Log.d("after=  ", "" + after);
                     parameters.putString("after", after);
 
                     nextRequest.setAccessToken(AccessToken.getCurrentAccessToken());
                     //nextRequest.setGraphPath(link);
-
                     nextRequest.setGraphPath("/" + Profile.getCurrentProfile().getId());
-                    nextRequest.setCallback(new AlbumGraphRequest());
+                    nextRequest.setCallback(this);
                     nextRequest.setParameters(parameters);
                     Log.d("GraphPath ", "" + nextRequest.getGraphPath());
                     if(counter < 1) {
@@ -206,7 +205,7 @@ public class AlbumsFragment extends Fragment {
                     counter++;
                 } else {
                     busy = false;
-                }
+                }*/
 
                 //getAlbumPictures(albumIds); // /getting picsssss
                 //getAlbumCover(albumIds);
