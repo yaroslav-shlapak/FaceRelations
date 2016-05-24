@@ -1,7 +1,6 @@
 package com.voidgreen.friendsrelations;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -21,6 +20,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +50,9 @@ public class AlbumsFragment extends Fragment {
     private List<String> photosList;
     private View view;
 
+    static int counter = 0;
+    private Bundle parameters = new Bundle();
+
 
     public AlbumsFragment() {
         // Required empty public constructor
@@ -69,10 +73,7 @@ public class AlbumsFragment extends Fragment {
         if (getArguments() != null) {
 
         }
-
-
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -84,11 +85,13 @@ public class AlbumsFragment extends Fragment {
 
         Profile profile = Profile.getCurrentProfile();
 
+        parameters.putString("fields", "id,name,albums");
+        parameters.putString("limit", "100");
+
         Toast.makeText(getActivity(), "AlbumsFragment onCreateView Profile = " + profile, Toast.LENGTH_SHORT).show();
         if(profile != null) {
             getAlbumPics();
         }
-
 
         return view;
     }
@@ -126,44 +129,100 @@ public class AlbumsFragment extends Fragment {
 
     private void getAlbumPics() {
 
-        GraphRequest request = GraphRequest.newMeRequest(
+
+        final GraphRequest.Callback graphCallback = new AlbumGraphRequest();
+
+        GraphRequest request = GraphRequest.newGraphPathRequest(
                 AccessToken.getCurrentAccessToken(),
-                new GraphRequest.GraphJSONObjectCallback() {
-                    @Override
-                    public void onCompleted(JSONObject object,
-                                            GraphResponse response) {
-                        try { // Application code
-                            JSONObject albums = new JSONObject(object
-                                    .getString("albums"));
+                "/" + Profile.getCurrentProfile().getId(),
+                graphCallback);
 
-                            JSONArray data_array = albums.getJSONArray("data");
-                            Log.d("data_array ==  ", "" + data_array);
-                            for (int i = 0; i < data_array.length(); i++) {
-                                JSONObject _pubKey = data_array
-                                        .getJSONObject(i);
-                                String albumId = _pubKey.getString("id");
-                                String albumName = _pubKey.getString("name");
-                                Log.d("FB ALbum ID ==  ", "" + albumId);
-                                albumIds.add(albumId);
-                                albumsList.add(new Album(albumId, albumName));
-
-                            }
-                            //getAlbumPictures(albumIds); // /getting picsssss
-                            //getAlbumCover(albumIds);
-                            getAlbums(albumsList);
-                        } catch (JSONException E) {
-                            E.printStackTrace();
-                        }
-
-                    }
-
-                });
-        Bundle parameters = new Bundle();
-        parameters.putString("fields",  "id,name,albums");
         request.setParameters(parameters);
         request.executeAsync();
 
+
     }
+    private class AlbumGraphRequest implements GraphRequest.Callback {
+        private boolean busy = false;
+        @Override
+        public void onCompleted(GraphResponse response) {
+
+            try { // Application code
+                Log.d("response=  ", "" + response);
+                JSONObject object = response.getJSONObject();
+                Log.d("object=  ", "" + object);
+                JSONObject albums = new JSONObject(object
+                        .getString("albums"));
+                Log.d("albums=  ", "" + albums);
+
+                JSONArray data_array = albums.getJSONArray("data");
+                Log.d("data_array =  ", "" + data_array);
+                Log.d("data_array.length =  ", "" + data_array.length());
+                for (int i = 0; i < data_array.length(); i++) {
+                    JSONObject _pubKey = data_array
+                            .getJSONObject(i);
+                    String albumId = _pubKey.getString("id");
+                    String albumName = _pubKey.getString("name");
+                    Log.d("FB ALbum ID ==  ", "" + albumId);
+                    albumIds.add(albumId);
+                    albumsList.add(new Album(albumId, albumName));
+
+                }
+
+                String link = null;
+                JSONObject pagingRequest = null;
+                if(response != null) {
+                    pagingRequest = albums.optJSONObject("paging");
+                    Log.d("pagingRequest=  ", "" + pagingRequest);
+                    if(pagingRequest != null) {
+                        link = pagingRequest.optString("next");
+                        Log.d("link=  ", "" + link);
+
+                    }
+                }
+                //GraphRequest nextRequest = new GraphRequest(AccessToken.getCurrentAccessToken(), new URL(link));
+                GraphRequest nextRequest = new GraphRequest();
+                //Log.d("nextRequest=  ", "" + nextRequest);
+                if (pagingRequest != null) {
+                    busy = true;
+                    Bundle parameters = new Bundle();
+                    parameters.putString("fields", "id,name,albums");
+                    //parameters.putString("limit", "100");
+                    String after =  pagingRequest.optJSONObject("cursors").optString("after");
+                    Log.d("after=  ", "" + after);
+                    parameters.putString("after", after);
+
+                    nextRequest.setAccessToken(AccessToken.getCurrentAccessToken());
+                    //nextRequest.setGraphPath(link);
+
+                    nextRequest.setGraphPath("/" + Profile.getCurrentProfile().getId());
+                    nextRequest.setCallback(new AlbumGraphRequest());
+                    nextRequest.setParameters(parameters);
+                    Log.d("GraphPath ", "" + nextRequest.getGraphPath());
+                    if(counter < 1) {
+                        nextRequest.executeAsync();
+                        busy = false;
+                    }
+                    counter++;
+                } else {
+                    busy = false;
+                }
+
+                //getAlbumPictures(albumIds); // /getting picsssss
+                //getAlbumCover(albumIds);
+                if(!busy) {
+                    getAlbums(albumsList);
+                }
+
+            } catch (JSONException E) {
+                E.printStackTrace();
+            }
+        }
+
+        public boolean isBusy() {
+            return busy;
+        }
+    };
 
     private void getAlbumPictures(ArrayList<String> albumIds) {
 
