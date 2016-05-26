@@ -21,7 +21,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import butterknife.ButterKnife;
 
@@ -37,6 +44,7 @@ public class AlbumsFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
+    private Map<String, Album> albumCovers = new HashMap<>();
     private ArrayList<String> albumIds = new ArrayList<>();
     private ArrayList<String> coverIds = new ArrayList<>();
 
@@ -82,8 +90,8 @@ public class AlbumsFragment extends Fragment {
 
         Profile profile = Profile.getCurrentProfile();
 
-        parameters.putString("fields", "id,name,albums");
-        parameters.putString("limit", "100");
+        parameters.putString("fields", "id,name,albums,updated_time,created_time,count");
+        parameters.putString("limit", "1000");
 
         Toast.makeText(getActivity(), "AlbumsFragment onCreateView Profile = " + profile, Toast.LENGTH_SHORT).show();
         if(profile != null) {
@@ -147,9 +155,6 @@ public class AlbumsFragment extends Fragment {
                 Log.d("response=  ", "" + response);
                 JSONObject object = response.getJSONObject();
                 Log.d("object=  ", "" + object);
-                /*JSONObject albums = new JSONObject(object
-                        .getString("albums"));
-                Log.d("albums=  ", "" + albums);*/
 
                 JSONArray data_array = object.getJSONArray("data");
                 Log.d("data_array =  ", "" + data_array);
@@ -158,11 +163,12 @@ public class AlbumsFragment extends Fragment {
                     JSONObject _pubKey = data_array
                             .getJSONObject(i);
                     String albumId = _pubKey.getString("id");
+                    String albumCreationTime = _pubKey.getString("created_time");
                     String albumName = _pubKey.getString("name");
+                    int count = _pubKey.getInt("count");
                     Log.d("FB ALbum ID ==  ", "" + albumId);
                     albumIds.add(albumId);
-                    albumsList.add(new Album(albumId, albumName));
-
+                    albumsList.add(new Album(albumId, albumName, albumCreationTime, count));
                 }
 
                 String link = null;
@@ -173,7 +179,6 @@ public class AlbumsFragment extends Fragment {
                     if(pagingRequest != null) {
                         link = pagingRequest.optString("next");
                         Log.d("link=  ", "" + link);
-
                     }
                 }
 
@@ -204,9 +209,11 @@ public class AlbumsFragment extends Fragment {
                             Log.d(MainActivity.TAG, "onCompleted: " + source);
                             album.addPhotoUrl(source);
                             coverIds.add(source);
+                            albumCovers.put(source, album);
                             if(flag) {
+                                albumCovers = sortAlbumByTime(albumCovers);
                                 GridAdapter adapter = new GridAdapter(
-                                        getContext(), coverIds);
+                                        getContext(), albumCovers);
                                 gridView.setAdapter(adapter);
                             }
 
@@ -219,7 +226,7 @@ public class AlbumsFragment extends Fragment {
 
         Bundle parameters = new Bundle();
         parameters.putString("fields", "id,images");
-        parameters.putString("limit", "0");
+        parameters.putString("limit", "1000");
         request.setParameters(parameters);
         request.executeAsync();
     }
@@ -251,11 +258,45 @@ public class AlbumsFragment extends Fragment {
                     });
             Bundle parameters = new Bundle();
             parameters.putString("fields", "id, cover_photo");
-            parameters.putString("limit", "100");
+            parameters.putString("limit", "1000");
             request.setParameters(parameters);
             request.executeAsync();
         }
 
+    }
+
+    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+        List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
+        Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> e2, Map.Entry<K, V> e1) {
+                return (e1.getValue()).compareTo(e2.getValue());
+            }
+        });
+
+        Map<K, V> result = new LinkedHashMap<>();
+        for (Map.Entry<K, V> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+
+        return result;
+    }
+
+    public static <K, V extends Comparable<? super V>> Map<K, V> sortAlbumByTime(Map<K, V> map) {
+        List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
+        Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> e2, Map.Entry<K, V> e1) {
+                return (e1.getValue()).compareTo(e2.getValue());
+            }
+        });
+
+        Map<K, V> result = new LinkedHashMap<>();
+        for (Map.Entry<K, V> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+
+        return result;
     }
 
 }

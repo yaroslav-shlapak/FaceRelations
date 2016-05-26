@@ -8,21 +8,28 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.voidgreen.facerelations.R;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class GridAdapter extends BaseAdapter {
     private Context context;
-    private List<String> photos;
+    private  List<String> photos;
+    private  List<Album> albums;
     private ImageView imageView;
+    private TextView albumName;
+    private TextView albumCount;
 
-    public GridAdapter(Context context, List<String> objects) {
+    public GridAdapter(Context context, Map<String, Album> objects) {
 
         this.context = context;
-        this.photos = objects;
+        this.photos = new ArrayList<>(objects.keySet());
+        this.albums = new ArrayList<>(objects.values());
     }
 
     @Override
@@ -53,7 +60,13 @@ public class GridAdapter extends BaseAdapter {
         }
 
         String url = photos.get(position);
+        Album album = albums.get(position);
         imageView = (SquareImageView) view.findViewById(R.id.imageView);
+        albumName = (TextView) view.findViewById(R.id.albumName);
+        albumCount = (TextView) view.findViewById(R.id.albumCount);
+
+        albumName.setText(album.getName());
+        albumCount.setText(Integer.toString(album.getCount()));
         //imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         imageView.setPadding(5, 5, 5, 5);
 

@@ -128,20 +128,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         }
         transaction.commit();
 
-
-        // If the access token is available already assign it.
-        //accessToken = AccessToken.getCurrentAccessToken();
-
-        /*if(accessToken != null) {
-            albumsFragment = new AlbumsFragment();
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_placeholder, albumsFragment).commit();
-        } else {
-            loginFragment = new LoginFragment();
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_placeholder, loginFragment).commit();
-        }*/
-
         //handle facebook authentification
         Profile profile = Profile.getCurrentProfile();
         if(profile != null) {
@@ -178,44 +164,6 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
                 }
             }
         };
-
-
-
-        /*Profile profile = Profile.getCurrentProfile();
-        if(profile != null) {
-            drawerUserName.setText(profile.getFirstName() + " " + profile.getLastName());
-            profilePictureView.setProfileId(profile.getId());
-        } else {
-            LoginManager loginManager = LoginManager.getInstance();
-
-            loginManager.registerCallback(callbackManager,
-                    new FacebookCallback<LoginResult>() {
-                        @Override
-                        public void onSuccess(LoginResult loginResult) {
-                            // App code
-
-                            //Toast.makeText(MainActivity.this, "onSuccess", Toast.LENGTH_SHORT).show();
-                            Profile profile = Profile.getCurrentProfile();
-                            if (profile != null) {
-                                drawerUserName.setText(profile.getFirstName() + " " + profile.getLastName());
-                                profilePictureView.setProfileId(profile.getId());
-                            }
-                        }
-
-                        @Override
-                        public void onCancel() {
-                            // App code
-                            Toast.makeText(MainActivity.this, "cancel", Toast.LENGTH_SHORT).show();
-
-                        }
-
-                        @Override
-                        public void onError(FacebookException exception) {
-                            // App code
-                            Toast.makeText(MainActivity.this, "error", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-        }*/
 
     }
 
