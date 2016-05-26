@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
@@ -34,14 +35,14 @@ import butterknife.ButterKnife;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link AlbumsFragment.OnFragmentInteractionListener} interface
+ * {@link AlbumsFragment.OnAlbumsFragmentInteractionListener} interface
  * to handle interaction events.
  * Use the {@link AlbumsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
 public class AlbumsFragment extends Fragment {
 
-    private OnFragmentInteractionListener mListener;
+    private OnAlbumsFragmentInteractionListener mListener;
 
     private Map<String, Album> albumCovers = new HashMap<>();
     private ArrayList<String> albumIds = new ArrayList<>();
@@ -85,7 +86,17 @@ public class AlbumsFragment extends Fragment {
         view = inflater.inflate(R.layout.fragment_albums, container, false);
         ButterKnife.bind(this, view);
 
-        gridView = (GridView) view.findViewById(R.id.gridView);
+        gridView = (GridView) view.findViewById(R.id.albumGridView);
+
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View v,
+                                    int position, long id) {
+                //Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
+                int index = (int) parent.getAdapter().getItemId(position);
+                Album album = albumsList.get(index);
+                mListener.onAlbumsFragmentInteraction(album);
+            }
+        });
 
         Profile profile = Profile.getCurrentProfile();
 
@@ -103,8 +114,8 @@ public class AlbumsFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+        if (context instanceof OnAlbumsFragmentInteractionListener) {
+            mListener = (OnAlbumsFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnPhotosFragmentInteractionListener");
@@ -117,9 +128,9 @@ public class AlbumsFragment extends Fragment {
         mListener = null;
     }
 
-    public interface OnFragmentInteractionListener {
+    public interface OnAlbumsFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onFragmentInteraction();
+        void onAlbumsFragmentInteraction(Album album);
     }
 
     public void updateAlbums() {
@@ -190,6 +201,8 @@ public class AlbumsFragment extends Fragment {
             }
         }
     };
+
+
 
     // get albums ids -> get each album by id -> get cover photo id -> get cover photo url
     private void getAlbumCover(final String coverId, final boolean flag, final Album album) {

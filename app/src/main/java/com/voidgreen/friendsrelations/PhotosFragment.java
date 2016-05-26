@@ -8,10 +8,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.GridView;
+import android.widget.Toast;
 
 import com.facebook.AccessToken;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
+import com.facebook.Profile;
 import com.voidgreen.facerelations.R;
 
 import org.json.JSONArray;
@@ -29,16 +32,19 @@ import java.util.ArrayList;
  * create an instance of this fragment.
  */
 public class PhotosFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+
 
     private ArrayList<String> photoIds = new ArrayList<>();
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private GridView gridView;
+
+    private PhotosGridAdapter mPhotosGridAdapter;
+
+    public void setAlbum(Album album) {
+        mAlbum = album;
+    }
+
+    private Album mAlbum;
 
     private OnPhotosFragmentInteractionListener mListener;
 
@@ -58,8 +64,6 @@ public class PhotosFragment extends Fragment {
     public static PhotosFragment newInstance(String param1, String param2) {
         PhotosFragment fragment = new PhotosFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
         return fragment;
     }
@@ -68,16 +72,20 @@ public class PhotosFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_photos, container, false);
+        // Inflate the layout for this fragmentv
+        View view = inflater.inflate(R.layout.fragment_photos, container, false);
+        gridView = (GridView) view.findViewById(R.id.photosGridView);
+        updatePhotos();
+        return view;
+
+
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -119,11 +127,19 @@ public class PhotosFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
+    public void updatePhotos() {
+        Profile profile = Profile.getCurrentProfile();
 
-    private void getAlbumPictures(ArrayList<String> albumIds) {
+        Toast.makeText(getActivity(), "AlbumsFragment onCreateView Profile = " + profile, Toast.LENGTH_SHORT).show();
+        if(profile != null && mAlbum != null) {
+            getImagesFromAlbum(mAlbum);
+        }
+    }
+
+    private void getImagesFromAlbum(Album album) {
 
         GraphRequest request = GraphRequest.newGraphPathRequest(
-                AccessToken.getCurrentAccessToken(), "/" + 1
+                AccessToken.getCurrentAccessToken(), "/" + album.getId()
                         + "/photos/", new GraphRequest.Callback() {
                     @Override
                     public void onCompleted(GraphResponse response) {
@@ -139,7 +155,8 @@ public class PhotosFragment extends Fragment {
                                 String photoID = _pubKey.getString("id");
                                 JSONArray images = _pubKey.getJSONArray("images");
                                 Log.d(MainActivity.TAG, "onCompleted: " + images);
-                                photoIds.add(images.getJSONObject(0).getString("source"));
+                                String url = images.getJSONObject(0).getString("source");
+                                photoIds.add(url);
                                 //String photoImages = _pubKey.get("images");
 
                                 //Bundle photoParameters = new Bundle();
@@ -166,9 +183,13 @@ public class PhotosFragment extends Fragment {
                                 //photoSourceRequest.setParameters(photoParameters);
                                 //photoSourceRequest.executeAsync();
                                 Log.d("pics id == ", "" + photoID);
-
+                                Log.d("url = ", "" + url);
 
                             }
+
+                            PhotosGridAdapter adapter = new PhotosGridAdapter(
+                                    getContext(), photoIds);
+                            gridView.setAdapter(adapter);
 
                         } catch (JSONException e) {
                             // TODO Auto-generated catch block
@@ -179,7 +200,7 @@ public class PhotosFragment extends Fragment {
 
         Bundle parameters = new Bundle();
         parameters.putString("fields", "id,images");
-        parameters.putString("limit", "0");
+        parameters.putString("limit", "1000");
         request.setParameters(parameters);
         request.executeAsync();
 

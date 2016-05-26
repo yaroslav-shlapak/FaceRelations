@@ -36,7 +36,7 @@ import com.facebook.login.LoginResult;
 import com.facebook.login.widget.ProfilePictureView;
 import com.voidgreen.facerelations.R;
 
-public class MainActivity extends AppCompatActivity implements LoginFragment.OnFragmentInteractionListener, AlbumsFragment.OnFragmentInteractionListener, PhotosFragment.OnPhotosFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements LoginFragment.OnFragmentInteractionListener, AlbumsFragment.OnAlbumsFragmentInteractionListener, PhotosFragment.OnPhotosFragmentInteractionListener {
     public static final String TAG = "FaceRelations";
 
     private static final int LOGIN = 0;
@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
     private boolean isResumed = false;
 
     private Fragment loginFragment;
+    private PhotosFragment photosFragment;
     private AlbumsFragment albumsFragment;
 
     private DrawerLayout drawerLayout;
@@ -119,8 +120,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         loginFragment = (LoginFragment) fm.findFragmentById(R.id.loginFragment);
         fragments[LOGIN] = (LoginFragment) loginFragment;
         albumsFragment = (AlbumsFragment) fm.findFragmentById(R.id.albumsFragment);
+        photosFragment = (PhotosFragment) fm.findFragmentById(R.id.photosFragment);
         fragments[ALBUMS_GRID] = albumsFragment;
-        fragments[PHOTOS_GRID] = fm.findFragmentById(R.id.photosFragment);
+        fragments[PHOTOS_GRID] = photosFragment;
 
         FragmentTransaction transaction = fm.beginTransaction();
         for(int i = 0; i < fragments.length; i++) {
@@ -222,7 +224,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
     }
 
     @Override
-    public void onFragmentInteraction() {
+    public void onFragmentInteraction(Uri uri) {
 
     }
 
@@ -255,7 +257,9 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri) {
-
+    public void onAlbumsFragmentInteraction(Album album) {
+        photosFragment.setAlbum(album);
+        photosFragment.updatePhotos();
+        showPhotosFragment();
     }
 }

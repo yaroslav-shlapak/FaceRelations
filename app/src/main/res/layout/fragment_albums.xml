@@ -5,7 +5,7 @@
     tools:context="com.voidgreen.friendsrelations.AlbumsFragment">
 
     <GridView
-        android:id="@+id/gridView"
+        android:id="@+id/albumGridView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:verticalSpacing="0dp"
