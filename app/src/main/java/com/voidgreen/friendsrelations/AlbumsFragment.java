@@ -20,16 +20,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.ButterKnife;
-import retrofit.Callback;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -44,7 +38,6 @@ public class AlbumsFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     private ArrayList<String> albumIds = new ArrayList<>();
-    private ArrayList<String> photoIds = new ArrayList<>();
     private ArrayList<String> coverIds = new ArrayList<>();
 
     private ArrayList<Album> albumsList = new ArrayList<>();
@@ -90,7 +83,7 @@ public class AlbumsFragment extends Fragment {
         Profile profile = Profile.getCurrentProfile();
 
         parameters.putString("fields", "id,name,albums");
-        parameters.putString("limit", "10");
+        parameters.putString("limit", "100");
 
         Toast.makeText(getActivity(), "AlbumsFragment onCreateView Profile = " + profile, Toast.LENGTH_SHORT).show();
         if(profile != null) {
@@ -138,9 +131,8 @@ public class AlbumsFragment extends Fragment {
 
         GraphRequest request = GraphRequest.newGraphPathRequest(
                 AccessToken.getCurrentAccessToken(),
-                "/" + Profile.getCurrentProfile().getId(),
+                "/" + Profile.getCurrentProfile().getId() + "/albums" ,
                 graphCallback);
-        parameters.putString("limit", "10");
         request.setParameters(parameters);
         request.executeAsync();
 
@@ -155,11 +147,11 @@ public class AlbumsFragment extends Fragment {
                 Log.d("response=  ", "" + response);
                 JSONObject object = response.getJSONObject();
                 Log.d("object=  ", "" + object);
-                JSONObject albums = new JSONObject(object
+                /*JSONObject albums = new JSONObject(object
                         .getString("albums"));
-                Log.d("albums=  ", "" + albums);
+                Log.d("albums=  ", "" + albums);*/
 
-                JSONArray data_array = albums.getJSONArray("data");
+                JSONArray data_array = object.getJSONArray("data");
                 Log.d("data_array =  ", "" + data_array);
                 Log.d("data_array.length =  ", "" + data_array.length());
                 for (int i = 0; i < data_array.length(); i++) {
@@ -176,7 +168,7 @@ public class AlbumsFragment extends Fragment {
                 String link = null;
                 JSONObject pagingRequest = null;
                 if(response != null) {
-                    pagingRequest = albums.optJSONObject("paging");
+                    pagingRequest = object.optJSONObject("paging");
                     Log.d("pagingRequest=  ", "" + pagingRequest);
                     if(pagingRequest != null) {
                         link = pagingRequest.optString("next");
@@ -184,75 +176,7 @@ public class AlbumsFragment extends Fragment {
 
                     }
                 }
-                //GraphRequest nextRequest = new GraphRequest(AccessToken.getCurrentAccessToken(), new URL(link));
-                if (pagingRequest != null) {
-                    busy = true;
 
-                    final RestAdapter restAdapter = new RestAdapter.Builder().setEndpoint(link).build();
-
-                    final Api api = restAdapter.create(Api.class);
-
-                    Callback<Page> pageCallback = new Callback<Page>() {
-                        @Override
-                        public void success(Page page, Response response) {
-
-                            List<Album> tempList = page.getData();
-                            albumsList.addAll(tempList);
-                            busy = false;
-                            Paging paging = page.getPaging();
-                            String next = paging.getNext();
-                            if(next == null) {
-                                getAlbums(albumsList);
-                            } else {
-                                GraphRequest request = GraphRequest.newGraphPathRequest(
-                                        AccessToken.getCurrentAccessToken(),
-                                        "/" + Profile.getCurrentProfile().getId(),
-                                        new AlbumGraphRequest());
-
-                                request.setParameters(parameters);
-                                request.executeAsync();
-                            }
-                        }
-
-                        @Override
-                        public void failure(RetrofitError error) {
-                            Toast.makeText(getContext(), "Failed " + error, Toast.LENGTH_SHORT).show();
-                            busy = false;
-                            getAlbums(albumsList);
-                        }
-                    };
-
-                    api.getData(pageCallback);
-                }
-
-
-                //Log.d("nextRequest=  ", "" + nextRequest);
-                /*if (pagingRequest != null) {
-                    busy = true;
-                    Bundle parameters = new Bundle();
-                    parameters.putString("fields", "id,name,albums");
-                    parameters.putString("limit", "100");
-                    String after =  pagingRequest.optJSONObject("cursors").optString("after");
-                    Log.d("after=  ", "" + after);
-                    parameters.putString("after", after);
-
-                    nextRequest.setAccessToken(AccessToken.getCurrentAccessToken());
-                    //nextRequest.setGraphPath(link);
-                    nextRequest.setGraphPath("/" + Profile.getCurrentProfile().getId());
-                    nextRequest.setCallback(this);
-                    nextRequest.setParameters(parameters);
-                    Log.d("GraphPath ", "" + nextRequest.getGraphPath());
-                    if(counter < 1) {
-                        nextRequest.executeAsync();
-                        busy = false;
-                    }
-                    counter++;
-                } else {
-                    busy = false;
-                }*/
-
-                //getAlbumPictures(albumIds); // /getting picsssss
-                //getAlbumCover(albumIds);
                 if(!busy) {
                     getAlbums(albumsList);
                 }
@@ -261,76 +185,8 @@ public class AlbumsFragment extends Fragment {
                 E.printStackTrace();
             }
         }
-
-        public boolean isBusy() {
-            return busy;
-        }
     };
 
-    private void getAlbumPictures(ArrayList<String> albumIds) {
-
-        GraphRequest request = GraphRequest.newGraphPathRequest(
-                AccessToken.getCurrentAccessToken(), "/" + 1
-                        + "/photos/", new GraphRequest.Callback() {
-                    @Override
-                    public void onCompleted(GraphResponse response) {
-                        JSONObject object = response.getJSONObject();
-                        Log.d(MainActivity.TAG, "onCompleted: " + object);
-                        try {
-                            final JSONArray data_array1 = object.getJSONArray("data");
-
-                            for (int i = 0; i < data_array1.length(); i++) {
-
-                                JSONObject _pubKey = data_array1
-                                        .getJSONObject(i);
-                                String photoID = _pubKey.getString("id");
-                                JSONArray images = _pubKey.getJSONArray("images");
-                                Log.d(MainActivity.TAG, "onCompleted: " + images);
-                                photoIds.add(images.getJSONObject(0).getString("source"));
-                                //String photoImages = _pubKey.get("images");
-
-                                //Bundle photoParameters = new Bundle();
-                                //photoParameters.putString("fields", "source");
-                                //photoParameters.putString("limit", "100");
-                                /*GraphRequest photoSourceRequest = new GraphRequest(
-                                        AccessToken.getCurrentAccessToken(),
-                                        photoImages + "?fields=source",
-                                        null,
-                                        HttpMethod.GET,
-                                        new GraphRequest.Callback() {
-                                            public void onCompleted(GraphResponse response) {
-                                                Log.d(TAG, "onCompleted: " + response);
-                                                   JSONObject object = response.getJSONObject();
-                                                try {
-                                                    String source = object.getString("source");
-                                                    photoIds.add(source);
-                                                } catch (JSONException e) {
-                                                    e.printStackTrace();
-                                                }
-                                            }
-                                        }
-                                );*/
-                                //photoSourceRequest.setParameters(photoParameters);
-                                //photoSourceRequest.executeAsync();
-                                Log.d("pics id == ", "" + photoID);
-
-
-                            }
-
-                        } catch (JSONException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    }
-                });
-
-        Bundle parameters = new Bundle();
-        parameters.putString("fields", "id,images");
-        parameters.putString("limit", "0");
-        request.setParameters(parameters);
-        request.executeAsync();
-
-    }
     // get albums ids -> get each album by id -> get cover photo id -> get cover photo url
     private void getAlbumCover(final String coverId, final boolean flag, final Album album) {
 

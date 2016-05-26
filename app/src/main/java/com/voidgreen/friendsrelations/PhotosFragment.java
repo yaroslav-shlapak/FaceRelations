@@ -4,11 +4,21 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
 import com.voidgreen.facerelations.R;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -23,6 +33,8 @@ public class PhotosFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+
+    private ArrayList<String> photoIds = new ArrayList<>();
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -105,5 +117,71 @@ public class PhotosFragment extends Fragment {
     public interface OnPhotosFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+
+    private void getAlbumPictures(ArrayList<String> albumIds) {
+
+        GraphRequest request = GraphRequest.newGraphPathRequest(
+                AccessToken.getCurrentAccessToken(), "/" + 1
+                        + "/photos/", new GraphRequest.Callback() {
+                    @Override
+                    public void onCompleted(GraphResponse response) {
+                        JSONObject object = response.getJSONObject();
+                        Log.d(MainActivity.TAG, "onCompleted: " + object);
+                        try {
+                            final JSONArray data_array1 = object.getJSONArray("data");
+
+                            for (int i = 0; i < data_array1.length(); i++) {
+
+                                JSONObject _pubKey = data_array1
+                                        .getJSONObject(i);
+                                String photoID = _pubKey.getString("id");
+                                JSONArray images = _pubKey.getJSONArray("images");
+                                Log.d(MainActivity.TAG, "onCompleted: " + images);
+                                photoIds.add(images.getJSONObject(0).getString("source"));
+                                //String photoImages = _pubKey.get("images");
+
+                                //Bundle photoParameters = new Bundle();
+                                //photoParameters.putString("fields", "source");
+                                //photoParameters.putString("limit", "100");
+                                /*GraphRequest photoSourceRequest = new GraphRequest(
+                                        AccessToken.getCurrentAccessToken(),
+                                        photoImages + "?fields=source",
+                                        null,
+                                        HttpMethod.GET,
+                                        new GraphRequest.Callback() {
+                                            public void onCompleted(GraphResponse response) {
+                                                Log.d(TAG, "onCompleted: " + response);
+                                                   JSONObject object = response.getJSONObject();
+                                                try {
+                                                    String source = object.getString("source");
+                                                    photoIds.add(source);
+                                                } catch (JSONException e) {
+                                                    e.printStackTrace();
+                                                }
+                                            }
+                                        }
+                                );*/
+                                //photoSourceRequest.setParameters(photoParameters);
+                                //photoSourceRequest.executeAsync();
+                                Log.d("pics id == ", "" + photoID);
+
+
+                            }
+
+                        } catch (JSONException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+        Bundle parameters = new Bundle();
+        parameters.putString("fields", "id,images");
+        parameters.putString("limit", "0");
+        request.setParameters(parameters);
+        request.executeAsync();
+
     }
 }
