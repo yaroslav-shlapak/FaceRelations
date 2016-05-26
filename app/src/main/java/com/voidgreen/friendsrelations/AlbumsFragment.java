@@ -90,7 +90,7 @@ public class AlbumsFragment extends Fragment {
         Profile profile = Profile.getCurrentProfile();
 
         parameters.putString("fields", "id,name,albums");
-        parameters.putString("limit", "100");
+        parameters.putString("limit", "10");
 
         Toast.makeText(getActivity(), "AlbumsFragment onCreateView Profile = " + profile, Toast.LENGTH_SHORT).show();
         if(profile != null) {
@@ -140,7 +140,7 @@ public class AlbumsFragment extends Fragment {
                 AccessToken.getCurrentAccessToken(),
                 "/" + Profile.getCurrentProfile().getId(),
                 graphCallback);
-
+        parameters.putString("limit", "10");
         request.setParameters(parameters);
         request.executeAsync();
 
@@ -190,7 +190,7 @@ public class AlbumsFragment extends Fragment {
 
                     final RestAdapter restAdapter = new RestAdapter.Builder().setEndpoint(link).build();
 
-                    Api api = restAdapter.create(Api.class);
+                    final Api api = restAdapter.create(Api.class);
 
                     Callback<Page> pageCallback = new Callback<Page>() {
                         @Override
@@ -199,7 +199,19 @@ public class AlbumsFragment extends Fragment {
                             List<Album> tempList = page.getData();
                             albumsList.addAll(tempList);
                             busy = false;
-                            getAlbums(albumsList);
+                            Paging paging = page.getPaging();
+                            String next = paging.getNext();
+                            if(next == null) {
+                                getAlbums(albumsList);
+                            } else {
+                                GraphRequest request = GraphRequest.newGraphPathRequest(
+                                        AccessToken.getCurrentAccessToken(),
+                                        "/" + Profile.getCurrentProfile().getId(),
+                                        new AlbumGraphRequest());
+
+                                request.setParameters(parameters);
+                                request.executeAsync();
+                            }
                         }
 
                         @Override
@@ -332,7 +344,7 @@ public class AlbumsFragment extends Fragment {
                         try {
 
                             JSONArray images = object.getJSONArray("images");
-                            String source = images.getJSONObject(0).getString("source");
+                            String source = images.getJSONObject(images.length() - 1).getString("source");
                             Log.d(MainActivity.TAG, "onCompleted: " + source);
                             album.addPhotoUrl(source);
                             coverIds.add(source);
