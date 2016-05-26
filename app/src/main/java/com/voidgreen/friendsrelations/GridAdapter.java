@@ -73,12 +73,18 @@ public class GridAdapter extends BaseAdapter {
         /*Picasso.with(context).load(url)
                 .resize(0, 400).into(imageView);*/
 
+        if(position == photos.size() - 1) {
+            albumCount.setPadding(0, 0, 0, 200);
+        }
+
         Picasso.with(context)
                 .load(url)
                 .fit().centerCrop()
                 .error(R.drawable.com_facebook_favicon_white)
                 .placeholder(R.drawable.ic_file_download_black_24dp)
                 .into(imageView);
+
+
         return view;
     }
 

@@ -13,7 +13,8 @@
         android:id="@+id/content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="#000000" >
 
 
 
@@ -21,7 +22,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:background="#000000" >
 
             <fragment
                 android:name="com.voidgreen.friendsrelations.AlbumsFragment"
