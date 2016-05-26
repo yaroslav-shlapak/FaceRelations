@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class GridAdapter extends BaseAdapter {
+public class AlbumsGridAdapter extends BaseAdapter {
     private Context context;
     private  List<String> photos;
     private  List<Album> albums;
@@ -25,7 +25,7 @@ public class GridAdapter extends BaseAdapter {
     private TextView albumName;
     private TextView albumCount;
 
-    public GridAdapter(Context context, Map<String, Album> objects) {
+    public AlbumsGridAdapter(Context context, Map<String, Album> objects) {
 
         this.context = context;
         this.photos = new ArrayList<>(objects.keySet());

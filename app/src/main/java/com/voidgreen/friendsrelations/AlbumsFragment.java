@@ -28,7 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 import butterknife.ButterKnife;
 
@@ -51,7 +50,7 @@ public class AlbumsFragment extends Fragment {
     private ArrayList<Album> albumsList = new ArrayList<>();
     private GridView gridView;
 
-    private GridAdapter gridAdapter;
+    private AlbumsGridAdapter mAlbumsGridAdapter;
     private List<String> photosList;
     private View view;
 
@@ -212,7 +211,7 @@ public class AlbumsFragment extends Fragment {
                             albumCovers.put(source, album);
                             if(flag) {
                                 albumCovers = sortAlbumByTime(albumCovers);
-                                GridAdapter adapter = new GridAdapter(
+                                AlbumsGridAdapter adapter = new AlbumsGridAdapter(
                                         getContext(), albumCovers);
                                 gridView.setAdapter(adapter);
                             }
