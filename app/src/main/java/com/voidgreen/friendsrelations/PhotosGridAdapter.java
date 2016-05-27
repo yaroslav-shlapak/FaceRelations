@@ -5,6 +5,7 @@ package com.voidgreen.friendsrelations;
  */
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,18 +15,27 @@ import android.widget.ImageView;
 import com.voidgreen.facerelations.R;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class PhotosGridAdapter extends BaseAdapter {
     private Context context;
-    private  List<String> photos;
+    private  List<String> photos = new ArrayList<>();
     private ImageView imageView;
 
-    public PhotosGridAdapter(Context context, List<String> objects) {
+    public PhotosGridAdapter(Context context, Map<String, String> objects) {
 
         this.context = context;
-        this.photos = objects;
+        update(objects);
+        Log.d("PhotosGrid photos = ", "" + photos);
 
+    }
+
+    public void update(Map<String, String> objects) {
+        photos.clear();
+        photos.addAll(new ArrayList<>(objects.keySet()));
+        notifyDataSetChanged();
     }
 
     @Override
@@ -65,6 +75,8 @@ public class PhotosGridAdapter extends BaseAdapter {
         if(position == photos.size() - 1) {
             imageView.setPadding(0, 0, 0, 200);
         }
+
+        Log.d("getView url = ", "" + url);
 
         Picasso.with(context)
                 .load(url)

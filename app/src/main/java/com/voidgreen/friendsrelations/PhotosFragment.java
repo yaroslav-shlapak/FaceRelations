@@ -22,6 +22,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -35,6 +42,7 @@ public class PhotosFragment extends Fragment {
 
 
     private ArrayList<String> photoIds = new ArrayList<>();
+    private Map<String, String> photosMap;
 
     private GridView gridView;
 
@@ -52,15 +60,6 @@ public class PhotosFragment extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment PhotosFragment.
-     */
-    // TODO: Rename and change types and number of parameters
     public static PhotosFragment newInstance(String param1, String param2) {
         PhotosFragment fragment = new PhotosFragment();
         Bundle args = new Bundle();
@@ -82,6 +81,9 @@ public class PhotosFragment extends Fragment {
         // Inflate the layout for this fragmentv
         View view = inflater.inflate(R.layout.fragment_photos, container, false);
         gridView = (GridView) view.findViewById(R.id.photosGridView);
+
+        photosMap = new HashMap<>();
+
         updatePhotos();
         return view;
 
@@ -105,25 +107,30 @@ public class PhotosFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+    public void cleanUp() {
+        if(photosMap != null) {
+            photosMap.clear();
+            Log.d(MainActivity.TAG, "photosMap.clear()");
+        }
+        if(mPhotosGridAdapter != null) {
+            mPhotosGridAdapter.notifyDataSetChanged();
+            Log.d(MainActivity.TAG, "mPhotosGridAdapter.notifyDataSetChanged();");
+        }
+    }
+
+
     public interface OnPhotosFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
     }
 
     public void updatePhotos() {
         Profile profile = Profile.getCurrentProfile();
 
-        Toast.makeText(getActivity(), "AlbumsFragment onCreateView Profile = " + profile, Toast.LENGTH_SHORT).show();
+        mPhotosGridAdapter = new PhotosGridAdapter(getContext(), photosMap);
+        gridView.setAdapter(mPhotosGridAdapter);
+        cleanUp();
+
+        //Toast.makeText(getActivity(), "AlbumsFragment onCreateView Profile = " + profile, Toast.LENGTH_SHORT).show();
         if(profile != null && mAlbum != null) {
             getImagesFromAlbum(mAlbum);
         }
@@ -131,13 +138,16 @@ public class PhotosFragment extends Fragment {
 
     private void getImagesFromAlbum(Album album) {
 
+        photosMap.clear();
+        final Map<String, String> tempMap = new HashMap();
+
         GraphRequest request = GraphRequest.newGraphPathRequest(
                 AccessToken.getCurrentAccessToken(), "/" + album.getId()
                         + "/photos/", new GraphRequest.Callback() {
                     @Override
                     public void onCompleted(GraphResponse response) {
                         JSONObject object = response.getJSONObject();
-                        Log.d(MainActivity.TAG, "onCompleted: " + object);
+                        //Log.d(MainActivity.TAG, "onCompleted: " + object);
                         try {
                             final JSONArray dataArray = object.getJSONArray("data");
 
@@ -146,44 +156,23 @@ public class PhotosFragment extends Fragment {
                                 JSONObject dataElement = dataArray
                                         .getJSONObject(i);
                                 String photoID = dataElement.getString("id");
+                                String updatedTime = dataElement.getString("updated_time");
                                 JSONArray images = dataElement.getJSONArray("images");
-                                Log.d(MainActivity.TAG, "onCompleted: " + images);
-                                JSONObject image = images.getJSONObject(images.length() - 2);
+                                //Log.d(MainActivity.TAG, "onCompleted: " + images);
+                                JSONObject image = images.getJSONObject(images.length() - 1);
                                 String url = image.getString("source");
-                                photoIds.add(url);
-                                //String photoImages = _pubKey.get("images");
 
-                                //Bundle photoParameters = new Bundle();
-                                //photoParameters.putString("fields", "source");
-                                //photoParameters.putString("limit", "100");
-                                /*GraphRequest photoSourceRequest = new GraphRequest(
-                                        AccessToken.getCurrentAccessToken(),
-                                        photoImages + "?fields=source",
-                                        null,
-                                        HttpMethod.GET,
-                                        new GraphRequest.Callback() {
-                                            public void onCompleted(GraphResponse response) {
-                                                Log.d(TAG, "onCompleted: " + response);
-                                                   JSONObject object = response.getJSONObject();
-                                                try {
-                                                    String source = object.getString("source");
-                                                    photoIds.add(source);
-                                                } catch (JSONException e) {
-                                                    e.printStackTrace();
-                                                }
-                                            }
-                                        }
-                                );*/
-                                //photoSourceRequest.setParameters(photoParameters);
-                                //photoSourceRequest.executeAsync();
-                                Log.d("pics id == ", "" + photoID);
-                                Log.d("url = ", "" + url);
+                                tempMap.put(url, updatedTime);
+                                photoIds.add(url);
+                                //Log.d("pics id == ", "" + photoID);
+                                //Log.d("url = ", "" + url);
 
                             }
 
-                            PhotosGridAdapter adapter = new PhotosGridAdapter(
-                                    getContext(), photoIds);
-                            gridView.setAdapter(adapter);
+                            photosMap.putAll(sortByValue(tempMap));
+                            Log.d("photosMap = ", "" + photosMap);
+
+                            mPhotosGridAdapter.update(photosMap);
 
                         } catch (JSONException e) {
                             // TODO Auto-generated catch block
@@ -193,10 +182,27 @@ public class PhotosFragment extends Fragment {
                 });
 
         Bundle parameters = new Bundle();
-        parameters.putString("fields", "id,images");
+        parameters.putString("fields", "id,images,updated_time");
         parameters.putString("limit", "1000");
         request.setParameters(parameters);
         request.executeAsync();
 
+    }
+
+    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+        List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
+        Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
+            @Override
+            public int compare(Map.Entry<K, V> e2, Map.Entry<K, V> e1) {
+                return (e1.getValue()).compareTo(e2.getValue());
+            }
+        });
+
+        Map<K, V> result = new LinkedHashMap<>();
+        for (Map.Entry<K, V> entry : list) {
+            result.put(entry.getKey(), entry.getValue());
+        }
+
+        return result;
     }
 }

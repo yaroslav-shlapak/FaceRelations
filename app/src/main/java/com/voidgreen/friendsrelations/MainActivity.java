@@ -246,8 +246,14 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         for (int i = 0; i < fragments.length; i++) {
             if (i == fragmentIndex) {
                 transaction.show(fragments[i]);
+                if(i == ALBUMS_GRID) {
+                    ((PhotosFragment) fragments[PHOTOS_GRID]).cleanUp();
+                }
             } else {
                 transaction.hide(fragments[i]);
+                if(i == PHOTOS_GRID) {
+                    ((PhotosFragment) fragments[i]).cleanUp();
+                }
             }
         }
         if (addToBackStack) {
@@ -258,8 +264,19 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
 
     @Override
     public void onAlbumsFragmentInteraction(Album album) {
+        photosFragment.cleanUp();
         photosFragment.setAlbum(album);
         photosFragment.updatePhotos();
         showPhotosFragment();
+    }
+
+    @Override
+    public void onBackPressed()
+    {
+        super.onBackPressed();
+        if(photosFragment != null) {
+            Toast.makeText(this, "CleanUp!", Toast.LENGTH_LONG).show();
+            photosFragment.cleanUp();
+        }
     }
 }

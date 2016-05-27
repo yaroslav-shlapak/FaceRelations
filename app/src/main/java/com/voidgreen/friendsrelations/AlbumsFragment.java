@@ -93,7 +93,7 @@ public class AlbumsFragment extends Fragment {
                                     int position, long id) {
                 //Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
                 int index = (int) parent.getAdapter().getItemId(position);
-                Album album = albumsList.get(index);
+                Album album = new ArrayList<>(albumCovers.values()).get(index);
                 mListener.onAlbumsFragmentInteraction(album);
             }
         });
@@ -103,7 +103,7 @@ public class AlbumsFragment extends Fragment {
         parameters.putString("fields", "id,name,albums,updated_time,created_time,count");
         parameters.putString("limit", "1000");
 
-        Toast.makeText(getActivity(), "AlbumsFragment onCreateView Profile = " + profile, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getActivity(), "AlbumsFragment onCreateView Profile = " + profile, Toast.LENGTH_SHORT).show();
         if(profile != null) {
             getAlbumPics();
         }
@@ -162,13 +162,13 @@ public class AlbumsFragment extends Fragment {
         public void onCompleted(GraphResponse response) {
 
             try { // Application code
-                Log.d("response=  ", "" + response);
+                //Log.d("response=  ", "" + response);
                 JSONObject object = response.getJSONObject();
-                Log.d("object=  ", "" + object);
+                //Log.d("object=  ", "" + object);
 
                 JSONArray data_array = object.getJSONArray("data");
-                Log.d("data_array =  ", "" + data_array);
-                Log.d("data_array.length =  ", "" + data_array.length());
+                //Log.d("data_array =  ", "" + data_array);
+                //Log.d("data_array.length =  ", "" + data_array.length());
                 for (int i = 0; i < data_array.length(); i++) {
                     JSONObject _pubKey = data_array
                             .getJSONObject(i);
@@ -176,7 +176,7 @@ public class AlbumsFragment extends Fragment {
                     String albumCreationTime = _pubKey.getString("created_time");
                     String albumName = _pubKey.getString("name");
                     int count = _pubKey.getInt("count");
-                    Log.d("FB ALbum ID ==  ", "" + albumId);
+                    //Log.d("FB ALbum ID ==  ", "" + albumId);
                     albumIds.add(albumId);
                     albumsList.add(new Album(albumId, albumName, albumCreationTime, count));
                 }
@@ -188,7 +188,7 @@ public class AlbumsFragment extends Fragment {
                     Log.d("pagingRequest=  ", "" + pagingRequest);
                     if(pagingRequest != null) {
                         link = pagingRequest.optString("next");
-                        Log.d("link=  ", "" + link);
+                        //Log.d("link=  ", "" + link);
                     }
                 }
 
@@ -213,12 +213,12 @@ public class AlbumsFragment extends Fragment {
                     @Override
                     public void onCompleted(GraphResponse response) {
                         JSONObject object = response.getJSONObject();
-                        Log.d(MainActivity.TAG, "onCompleted: " + object);
+                        //Log.d(MainActivity.TAG, "onCompleted: " + object);
                         try {
 
                             JSONArray images = object.getJSONArray("images");
                             String source = images.getJSONObject(images.length() - 1).getString("source");
-                            Log.d(MainActivity.TAG, "onCompleted: " + source);
+                            //Log.d(MainActivity.TAG, "onCompleted: " + source);
                             album.addPhotoUrl(source);
                             coverIds.add(source);
                             albumCovers.put(source, album);
@@ -255,7 +255,7 @@ public class AlbumsFragment extends Fragment {
                         @Override
                         public void onCompleted(GraphResponse response) {
                             JSONObject object = response.getJSONObject();
-                            Log.d(MainActivity.TAG, " getAlbums onCompleted: " + object);
+                            //Log.d(MainActivity.TAG, " getAlbums onCompleted: " + object);
                             try {
                                 final JSONObject coverPhotoObject = object.getJSONObject("cover_photo");
                                 String coverId = coverPhotoObject.getString("id");
@@ -275,23 +275,6 @@ public class AlbumsFragment extends Fragment {
             request.executeAsync();
         }
 
-    }
-
-    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
-        List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
-        Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
-            @Override
-            public int compare(Map.Entry<K, V> e2, Map.Entry<K, V> e1) {
-                return (e1.getValue()).compareTo(e2.getValue());
-            }
-        });
-
-        Map<K, V> result = new LinkedHashMap<>();
-        for (Map.Entry<K, V> entry : list) {
-            result.put(entry.getKey(), entry.getValue());
-        }
-
-        return result;
     }
 
     public static <K, V extends Comparable<? super V>> Map<K, V> sortAlbumByTime(Map<K, V> map) {
