@@ -94,8 +94,8 @@ public class PhotosGridAdapter extends BaseAdapter {
         Picasso.with(context)
                 .load(url)
                 .fit().centerCrop()
-                .error(R.drawable.com_facebook_favicon_white)
-                .placeholder(R.drawable.ic_file_download_black_24dp)
+                .error(R.drawable.facebook)
+                .placeholder(R.drawable.placeholder)
                 .into(imageView);
 
 

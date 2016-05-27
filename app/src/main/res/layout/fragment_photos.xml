@@ -12,6 +12,6 @@
         android:horizontalSpacing="0dp"
         android:stretchMode="columnWidth"
         android:numColumns="2"
-        android:background="#000000" />
+        android:theme="@style/LayoutsStyle"/>
 
 </FrameLayout>

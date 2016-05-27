@@ -68,7 +68,6 @@ public class AlbumsGridAdapter extends BaseAdapter {
         albumName.setText(album.getName());
         albumCount.setText(Integer.toString(album.getCount()));
         //imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        imageView.setPadding(5, 5, 5, 5);
 
         /*Picasso.with(context).load(url)
                 .resize(0, 400).into(imageView);*/
@@ -82,10 +81,9 @@ public class AlbumsGridAdapter extends BaseAdapter {
         Picasso.with(context)
                 .load(url)
                 .fit().centerCrop()
-                .error(R.drawable.com_facebook_favicon_white)
-                .placeholder(R.drawable.ic_file_download_black_24dp)
+                .error(R.drawable.facebook)
+                .placeholder(R.drawable.placeholder)
                 .into(imageView);
-
 
         return view;
     }

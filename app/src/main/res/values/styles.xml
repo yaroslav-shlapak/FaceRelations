@@ -11,6 +11,11 @@
         <item name="android:selectableItemBackground">@drawable/selectable_item_background</item>
     </style>
 
+    <style name="LayoutsStyle">
+        <item name="android:background">@color/layoutBackground</item> 
+        <item name="android:textColor">@color/colorBlack</item> 
+    </style>
+
     <style name="FabStyle">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
