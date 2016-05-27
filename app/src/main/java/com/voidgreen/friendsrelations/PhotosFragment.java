@@ -174,7 +174,7 @@ public class PhotosFragment extends Fragment {
 
                                 tempMap.put(url, date.getTime());
 
-                                Log.d(MainActivity.TAG, "onCompleted: " + photoID + " " + date.getTime() + " " + updatedTime +" " + url);
+                                //Log.d(MainActivity.TAG, "onCompleted: " + photoID + " " + date.getTime() + " " + updatedTime +" " + url);
                                 photoIds.add(url);
                                 //Log.d("pics id == ", "" + photoID);
                                 //Log.d("url = ", "" + url);
@@ -183,7 +183,7 @@ public class PhotosFragment extends Fragment {
 
                             //photosMap.putAll(sortByValue(tempMap));
                             photosMap.putAll(tempMap);
-                            Log.d("tempMap = ", "" + tempMap);
+                            //Log.d("tempMap = ", "" + tempMap);
 
                             mPhotosGridAdapter.update(photoIds);
 

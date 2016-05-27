@@ -76,15 +76,20 @@ public class PhotosGridAdapter extends BaseAdapter {
         /*Picasso.with(context).load(url)
                 .resize(0, 400).into(imageView);*/
 
-        /*if(position == photos.size() - 1) {
-            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        if(position == photos.size() - 1) {
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
             Log.d("getView url = ", "" + url);
             Log.d("getView position = ", "" + position);
             lp.setMargins(0, 0, 0, 200);
-            //imageView.setLayoutParams(lp);
-        }*/
+            imageView.setLayoutParams(lp);
+        } else {
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+            Log.d("getView url = ", "" + url);
+            Log.d("getView position = ", "" + position);
+            imageView.setLayoutParams(lp);
+        }
 
-        Log.d("getView url = ", "" + url);
+        //Log.d("getView url = ", "" + url);
 
         Picasso.with(context)
                 .load(url)

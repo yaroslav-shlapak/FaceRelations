@@ -75,6 +75,8 @@ public class AlbumsGridAdapter extends BaseAdapter {
 
         if(position == photos.size() - 1) {
             albumCount.setPadding(0, 0, 0, 200);
+        } else {
+            albumCount.setPadding(0, 0, 0, 0);
         }
 
         Picasso.with(context)
