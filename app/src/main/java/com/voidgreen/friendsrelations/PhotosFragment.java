@@ -88,13 +88,6 @@ public class PhotosFragment extends Fragment {
 
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -146,16 +139,17 @@ public class PhotosFragment extends Fragment {
                         JSONObject object = response.getJSONObject();
                         Log.d(MainActivity.TAG, "onCompleted: " + object);
                         try {
-                            final JSONArray data_array1 = object.getJSONArray("data");
+                            final JSONArray dataArray = object.getJSONArray("data");
 
-                            for (int i = 0; i < data_array1.length(); i++) {
+                            for (int i = 0; i < dataArray.length(); i++) {
 
-                                JSONObject _pubKey = data_array1
+                                JSONObject dataElement = dataArray
                                         .getJSONObject(i);
-                                String photoID = _pubKey.getString("id");
-                                JSONArray images = _pubKey.getJSONArray("images");
+                                String photoID = dataElement.getString("id");
+                                JSONArray images = dataElement.getJSONArray("images");
                                 Log.d(MainActivity.TAG, "onCompleted: " + images);
-                                String url = images.getJSONObject(0).getString("source");
+                                JSONObject image = images.getJSONObject(images.length() - 2);
+                                String url = image.getString("source");
                                 photoIds.add(url);
                                 //String photoImages = _pubKey.get("images");
 
