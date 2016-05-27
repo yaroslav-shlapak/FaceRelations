@@ -173,7 +173,7 @@ public class AlbumsFragment extends Fragment {
                     JSONObject _pubKey = data_array
                             .getJSONObject(i);
                     String albumId = _pubKey.getString("id");
-                    String albumCreationTime = _pubKey.getString("created_time");
+                    String albumCreationTime = _pubKey.getString("updated_time");
                     String albumName = _pubKey.getString("name");
                     int count = _pubKey.getInt("count");
                     //Log.d("FB ALbum ID ==  ", "" + albumId);

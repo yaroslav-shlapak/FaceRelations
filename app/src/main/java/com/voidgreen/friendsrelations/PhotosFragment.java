@@ -21,13 +21,17 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -42,7 +46,7 @@ public class PhotosFragment extends Fragment {
 
 
     private ArrayList<String> photoIds = new ArrayList<>();
-    private Map<String, String> photosMap;
+    private Map<String, Long> photosMap;
 
     private GridView gridView;
 
@@ -108,13 +112,13 @@ public class PhotosFragment extends Fragment {
     }
 
     public void cleanUp() {
-        if(photosMap != null) {
-            photosMap.clear();
-            Log.d(MainActivity.TAG, "photosMap.clear()");
+        if(photoIds != null) {
+            photoIds.clear();
+            //Log.d(MainActivity.TAG, "photoIds.clear()");
         }
         if(mPhotosGridAdapter != null) {
             mPhotosGridAdapter.notifyDataSetChanged();
-            Log.d(MainActivity.TAG, "mPhotosGridAdapter.notifyDataSetChanged();");
+            //Log.d(MainActivity.TAG, "mPhotosGridAdapter.notifyDataSetChanged();");
         }
     }
 
@@ -126,7 +130,7 @@ public class PhotosFragment extends Fragment {
     public void updatePhotos() {
         Profile profile = Profile.getCurrentProfile();
 
-        mPhotosGridAdapter = new PhotosGridAdapter(getContext(), photosMap);
+        mPhotosGridAdapter = new PhotosGridAdapter(getContext(), photoIds);
         gridView.setAdapter(mPhotosGridAdapter);
         cleanUp();
 
@@ -139,7 +143,7 @@ public class PhotosFragment extends Fragment {
     private void getImagesFromAlbum(Album album) {
 
         photosMap.clear();
-        final Map<String, String> tempMap = new HashMap();
+        final Map<String, Long> tempMap = new HashMap();
 
         GraphRequest request = GraphRequest.newGraphPathRequest(
                 AccessToken.getCurrentAccessToken(), "/" + album.getId()
@@ -155,34 +159,45 @@ public class PhotosFragment extends Fragment {
 
                                 JSONObject dataElement = dataArray
                                         .getJSONObject(i);
+
+                                //Log.d(MainActivity.TAG, "onCompleted dataElement: " + dataElement);
                                 String photoID = dataElement.getString("id");
-                                String updatedTime = dataElement.getString("updated_time");
+                                String updatedTime = dataElement.getString("created_time");
+
+                                SimpleDateFormat updatedTimeFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.getDefault());
+                                Date date = updatedTimeFormat.parse(updatedTime);
+
                                 JSONArray images = dataElement.getJSONArray("images");
-                                //Log.d(MainActivity.TAG, "onCompleted: " + images);
+
                                 JSONObject image = images.getJSONObject(images.length() - 1);
                                 String url = image.getString("source");
 
-                                tempMap.put(url, updatedTime);
+                                tempMap.put(url, date.getTime());
+
+                                Log.d(MainActivity.TAG, "onCompleted: " + photoID + " " + date.getTime() + " " + updatedTime +" " + url);
                                 photoIds.add(url);
                                 //Log.d("pics id == ", "" + photoID);
                                 //Log.d("url = ", "" + url);
 
                             }
 
-                            photosMap.putAll(sortByValue(tempMap));
-                            Log.d("photosMap = ", "" + photosMap);
+                            //photosMap.putAll(sortByValue(tempMap));
+                            photosMap.putAll(tempMap);
+                            Log.d("tempMap = ", "" + tempMap);
 
-                            mPhotosGridAdapter.update(photosMap);
+                            mPhotosGridAdapter.update(photoIds);
 
                         } catch (JSONException e) {
                             // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        } catch (ParseException e) {
                             e.printStackTrace();
                         }
                     }
                 });
 
         Bundle parameters = new Bundle();
-        parameters.putString("fields", "id,images,updated_time");
+        parameters.putString("fields", "id,images,updated_time, created_time");
         parameters.putString("limit", "1000");
         request.setParameters(parameters);
         request.executeAsync();
@@ -193,7 +208,7 @@ public class PhotosFragment extends Fragment {
         List<Map.Entry<K, V>> list = new LinkedList<>(map.entrySet());
         Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
             @Override
-            public int compare(Map.Entry<K, V> e2, Map.Entry<K, V> e1) {
+            public int compare(Map.Entry<K, V> e1, Map.Entry<K, V> e2) {
                 return (e1.getValue()).compareTo(e2.getValue());
             }
         });

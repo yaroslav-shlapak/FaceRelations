@@ -11,10 +11,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 import com.voidgreen.facerelations.R;
 import com.squareup.picasso.Picasso;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +25,9 @@ public class PhotosGridAdapter extends BaseAdapter {
     private Context context;
     private  List<String> photos = new ArrayList<>();
     private ImageView imageView;
+    private int size = 0;
 
-    public PhotosGridAdapter(Context context, Map<String, String> objects) {
+    public PhotosGridAdapter(Context context, List<String> objects) {
 
         this.context = context;
         update(objects);
@@ -32,9 +35,10 @@ public class PhotosGridAdapter extends BaseAdapter {
 
     }
 
-    public void update(Map<String, String> objects) {
+    public void update(List<String> objects) {
         photos.clear();
-        photos.addAll(new ArrayList<>(objects.keySet()));
+        photos.addAll(objects);
+        size = objects.size();
         notifyDataSetChanged();
     }
 
@@ -72,9 +76,13 @@ public class PhotosGridAdapter extends BaseAdapter {
         /*Picasso.with(context).load(url)
                 .resize(0, 400).into(imageView);*/
 
-        if(position == photos.size() - 1) {
-            imageView.setPadding(0, 0, 0, 200);
-        }
+        /*if(position == photos.size() - 1) {
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            Log.d("getView url = ", "" + url);
+            Log.d("getView position = ", "" + position);
+            lp.setMargins(0, 0, 0, 200);
+            //imageView.setLayoutParams(lp);
+        }*/
 
         Log.d("getView url = ", "" + url);
 
