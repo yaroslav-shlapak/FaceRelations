@@ -7,26 +7,25 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#ababab"
-        android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginBottom="2dp"
+        android:layout_height="0.6dp"
+        android:background="#bcbcbc"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="1.5dp"
         android:layout_marginTop="2dp"/>
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#ababab"
-        android:layout_marginLeft="7dp"
-        android:layout_marginRight="7dp"
-        android:layout_marginBottom="2dp" />
+        android:layout_height="0.6dp"
+        android:background="#bcbcbc"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginBottom="1.5dp" />
 
     <com.voidgreen.friendsrelations.SquareImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
+
         android:id="@+id/albumImageView" />
 
     <TextView
@@ -37,7 +36,8 @@
         android:id="@+id/albumName"
         android:textSize="15dp"
         android:textColor="@color/colorBlack"
-        android:layout_marginLeft="10dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginLeft="2dp"
         android:ellipsize="end"
         android:maxLines="1"/>
 
@@ -45,7 +45,7 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="10dp">
+        android:layout_marginLeft="2dp">
 
         <TextView
             android:layout_width="wrap_content"
@@ -64,8 +64,7 @@
             android:text=" photos"
             android:textSize="12dp"
             android:ellipsize="end"
-            android:maxLines="1"
-            android:layout_marginBottom="10dp"/>
+            android:maxLines="1"/>
     </LinearLayout>
 
     <!--android:scaleType="centerCrop"

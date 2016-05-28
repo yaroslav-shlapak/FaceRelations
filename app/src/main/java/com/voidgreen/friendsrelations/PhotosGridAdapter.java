@@ -71,7 +71,6 @@ public class PhotosGridAdapter extends BaseAdapter {
 
         String url = photos.get(position);
         imageView = (SquareImageView) view.findViewById(R.id.photosImageView);
-        imageView.setPadding(5, 5, 5, 5);
 
         /*Picasso.with(context).load(url)
                 .resize(0, 400).into(imageView);*/
